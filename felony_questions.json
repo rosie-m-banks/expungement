@@ -1,0 +1,6 @@
+{
+    "q1": {
+        "question": "Can you please input the counts on this case?",
+        "response_type": "StringList"
+    }
+}
