@@ -383,8 +383,10 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 def main() -> None:
     if not os.path.isdir(WEB_DIR):
         raise RuntimeError(f"Missing web directory at {WEB_DIR}")
-    server = ThreadedHTTPServer(("127.0.0.1", 8000), AppHandler)
-    print("Serving on http://127.0.0.1:8000")
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", "8000"))
+    server = ThreadedHTTPServer((host, port), AppHandler)
+    print(f"Serving on http://{host}:{port}")
     server.serve_forever()
 
 
