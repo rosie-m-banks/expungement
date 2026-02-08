@@ -4,9 +4,9 @@ from misdemeanor import Misdemeanor
 from felony import Felony
 
 class InformationGatherer():
-    def __init__(self):
-        self.inputManager = InputManager()
-        self.outputManager = OutputManager()
+    def __init__(self, input_manager=None, output_manager=None):
+        self.inputManager = input_manager if input_manager is not None else InputManager()
+        self.outputManager = output_manager if output_manager is not None else OutputManager()
         self.num_cases = -1
 
     def prelim_questions(self):

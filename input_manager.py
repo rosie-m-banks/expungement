@@ -1,43 +1,69 @@
-from ast import List
+import json
+import os
+import queue
 from datetime import datetime
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class InputManager():
     def __init__(self):
-        pass
+        self._question_queue = queue.Queue()
+        self._answer_queue = queue.Queue()
 
     def check_ans(self, answer):
+        if isinstance(answer, bool):
+            return answer
         if 'y' in answer.lower():
             return True
-        else:
-            return False
-    
+        return False
+
     def check_file_contents(self, filename, match):
-        with open(filename, 'r') as file:
+        filepath = os.path.join(BASE_DIR, filename) if not os.path.isabs(filename) else filename
+        with open(filepath, 'r') as file:
             for line in file:
                 if line == match:
                     return True
         return False
-    
-    def ask_questions(self, filenames: List[str]):
-        ### TODO: send this info to frontend, collect and return as specified types
-        pass
 
-    def ask_question_str(self, question):
-        output = str(input(question))
-        return output
-    
-    def ask_question_int(self, question):
-        output = int(input(question))
-        return output
-    
-    def ask_question_float(self, question):
-        output = float(input(question))
-        return output
+    def ask_questions(self, filenames):
+        """Read question JSON file(s), enqueue for the web frontend, block until
+        decoded answers arrive, and return them as a tuple (or single value)."""
+        if isinstance(filenames, str):
+            filenames = [filenames]
+
+        questions = []
+        for fn in filenames:
+            filepath = os.path.join(BASE_DIR, fn) if not os.path.isabs(fn) else fn
+            with open(filepath, 'r') as f:
+                data = json.load(f)
+                for key in sorted(data.keys(), key=lambda k: int(k[1:])):
+                    questions.append(data[key])
+
+        # Enqueue questions with source filenames for the web server
+        self._question_queue.put({"filenames": filenames, "questions": questions})
+
+        # Block until decoded answers arrive from the web server
+        answers = self._answer_queue.get()
+
+        if len(answers) == 1:
+            return answers[0]
+        return tuple(answers)
+
+    # -- helpers used by the web server --
+
+    def get_pending_questions(self):
+        """Non-blocking: return the next question batch or None."""
+        try:
+            return self._question_queue.get_nowait()
+        except queue.Empty:
+            return None
+
+    def provide_answers(self, answers):
+        """Push decoded answers so ask_questions() can unblock."""
+        self._answer_queue.put(answers)
 
     def get_date_time(self, input_date):
-        format_pattern = "%m-%d-%Y" # The format pattern matching the string
-
+        format_pattern = "%m-%d-%Y"
         datetime_object = datetime.strptime(input_date, format_pattern)
         return datetime_object
-
-

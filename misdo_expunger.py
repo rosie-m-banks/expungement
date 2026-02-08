@@ -57,7 +57,7 @@ class MisdoExpunger():
         case_name = self.misdemeanors[index].case_name
 
         if self.misdemeanors[index].convic_dismiss_defer_drug == 3:
-            if self.today - self.misdemeanors[index].sentencing_date >= timedelta(days=365):
+            if self.today - self.misdemeanors[index].sentencing_date < timedelta(days=365):
                 self.case_results[case_name] = "Not expungeable. < 1 year since dismissal."
                 return False
             if not self.misdemeanors[index].fines_paid:
