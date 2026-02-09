@@ -1,0 +1,18 @@
+{
+    "q1": {
+        "question": "Any pending charges?",
+        "response_type": "Boolean"
+    },
+    "q2": {
+        "question": "Any out of state charges?",
+        "response_type": "Boolean"
+    },
+    "q3": {
+        "question": "Is your client currently serving a sentence?",
+        "response_type": "Boolean"
+    },
+    "q4": {
+        "question": "How many cases does your client have (felony, misdemeanor, or arrest no charges filed)?",
+        "response_type": "Int"
+    }
+}

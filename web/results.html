@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Results - Expungement Screening</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/results.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Expungement Screening</h1>
+        <p class="subtitle">Analysis results</p>
+      </header>
+
+      <div id="error-text" class="error"></div>
+
+      <!-- Data collection complete — prompt user to start analysis -->
+      <section id="ready-section" class="card">
+        <h2>Data Collection Complete</h2>
+        <p>All required information has been collected successfully.</p>
+        <div class="btn-row">
+          <button id="analyze-btn" class="primary-btn accent-btn">Start Analysis</button>
+        </div>
+      </section>
+
+      <!-- Analyzing spinner -->
+      <section id="analyzing-section" class="card hidden">
+        <h2>Analyzing</h2>
+        <p>Processing expungement eligibility. Please wait&hellip;</p>
+        <div class="spinner"></div>
+      </section>
+
+      <!-- Final results -->
+      <section id="results-section" class="card hidden">
+        <h2>Results</h2>
+        <div id="results-container"></div>
+        <div class="btn-row">
+          <button id="restart-btn" class="primary-btn">Start New Session</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/common.js"></script>
+    <script src="js/results.js"></script>
+  </body>
+</html>
+
+

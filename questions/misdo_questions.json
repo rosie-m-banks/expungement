@@ -1,0 +1,10 @@
+{
+    "q1": {
+        "question": "How much was the fine? (In dollars, if N/A input 0)",
+        "response_type": "Float"
+    },
+    "q2": {
+        "question": "Did this result in a term of imprisonment / suspended sentence?",
+        "response_type": "Boolean"
+    }
+}
