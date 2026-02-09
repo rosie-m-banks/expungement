@@ -49,7 +49,7 @@ def analyze(misdos, felons, arrests, output_manager=None):
         }
 
     output_manager.print_out(overall_results)
-    output_manager.print_out("Generative AI can be unreliable. Use with discretion for any Section 571 or Section 13 or SORA classification.")
+    output_manager.print_out("Cosine similarity used for Section 571, Section 13, and SORA classification. Use with discretion.")
 
 
 def build_details(case):

@@ -33,7 +33,7 @@
         "response_type": "Boolean"
     },
     "q9": {
-        "question": "Does any of the following apply? \nSOL Expired \nDA has confirmed in writing they will not refile \nCase dismissed with costs, and costs paid or waived",
+        "question": "Do any of the following apply? \nSOL Expired \nDA has confirmed in writing they will not refile \nCase dismissed with costs, and costs paid or waived",
         "response_type": "Boolean"
     }
 }

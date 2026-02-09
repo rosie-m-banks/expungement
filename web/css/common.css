@@ -1,14 +1,52 @@
+/* ---- Fonts ---- */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* ---- Design tokens (OU Crimson & Cream) ---- */
+:root {
+  --crimson: #841617;
+  --crimson-dark: #6b1112;
+  --crimson-light: #a93234;
+  --cream: #fdf5e6;
+  --cream-dark: #f0e4d0;
+  --text: #2c1810;
+  --text-muted: #6b5a52;
+  --white: #ffffff;
+  --border: #d9cfc4;
+  --scales-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cline x1='32' y1='8' x2='32' y2='52' stroke='%23841617' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='12' y1='20' x2='52' y2='20' stroke='%23841617' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='8' r='4' fill='%23841617'/%3E%3Cpath d='M12 20L5 36Q12 44 19 36Z' stroke='%23841617' stroke-width='2' fill='none' stroke-linejoin='round'/%3E%3Cpath d='M52 20L45 36Q52 44 59 36Z' stroke='%23841617' stroke-width='2' fill='none' stroke-linejoin='round'/%3E%3Cline x1='22' y1='52' x2='42' y2='52' stroke='%23841617' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
 /* ---- Reset & base ---- */
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: #f5f6fa;
-  color: #1c1d22;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Crimson accent bar across top of page */
+body::before {
+  content: '';
+  display: block;
+  height: 5px;
+  background: linear-gradient(90deg, var(--crimson-dark), var(--crimson), var(--crimson-dark));
+}
+
+/* Faint watermark scales in bottom-right corner */
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -30px;
+  right: -30px;
+  width: 260px;
+  height: 260px;
+  background: var(--scales-svg) center/contain no-repeat;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .container {
@@ -17,72 +55,115 @@ body {
   padding: 32px 20px 60px;
 }
 
-/* ---- Typography ---- */
+/* ---- Header ---- */
+
+header {
+  text-align: center;
+  padding: 16px 0 24px;
+}
+
+/* Scales-of-justice icon above the title */
+header::before {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 12px;
+  background: var(--scales-svg) center/contain no-repeat;
+}
+
+/* Thin ornamental rule under subtitle */
+header::after {
+  content: '';
+  display: block;
+  width: 72px;
+  height: 2px;
+  background: var(--crimson);
+  margin: 16px auto 0;
+  border-radius: 1px;
+}
 
 header h1 {
   margin: 0 0 6px;
-  font-size: 28px;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--crimson);
+  letter-spacing: -0.3px;
 }
 
 .subtitle {
-  margin: 0 0 20px;
-  color: #555b6a;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 15px;
 }
 
 /* ---- Cards ---- */
 
 .card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  padding: 24px;
-  margin-bottom: 18px;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(44, 24, 16, 0.06),
+              0 4px 16px rgba(44, 24, 16, 0.04);
+  padding: 28px;
+  margin-bottom: 20px;
+  border-top: 3px solid var(--crimson);
 }
 
 .card h2 {
   margin: 0 0 14px;
+  font-family: 'Lora', Georgia, serif;
   font-size: 20px;
+  color: var(--crimson-dark);
 }
 
 /* ---- Buttons ---- */
 
 .primary-btn {
-  background: #3b82f6;
+  background: var(--crimson);
   border: none;
-  color: white;
-  padding: 10px 20px;
+  color: var(--white);
+  padding: 11px 24px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 15px;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .primary-btn:hover {
-  background: #2563eb;
+  background: var(--crimson-dark);
+  box-shadow: 0 2px 8px rgba(132, 22, 23, 0.3);
 }
 
-.accent-btn {
-  background: #10b981;
+.primary-btn:focus-visible {
+  outline: 2px solid var(--crimson-light);
+  outline-offset: 2px;
 }
 
-.accent-btn:hover {
-  background: #059669;
-}
+.accent-btn       { background: var(--crimson); }
+.accent-btn:hover { background: var(--crimson-dark); }
 
 .secondary-btn {
-  background: #fff;
-  border: 2px solid #cbd5e1;
-  color: #475569;
+  background: var(--white);
+  border: 2px solid var(--border);
+  color: var(--text);
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 15px;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .secondary-btn:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
+  background: var(--cream);
+  border-color: var(--crimson-light);
+}
+
+.secondary-btn:focus-visible {
+  outline: 2px solid var(--crimson-light);
+  outline-offset: 2px;
 }
 
 .btn-row {
@@ -95,7 +176,7 @@ header h1 {
 /* ---- Error ---- */
 
 .error {
-  color: #dc2626;
+  color: #b91c1c;
   margin-bottom: 10px;
   font-weight: 500;
   min-height: 0;
@@ -103,8 +184,4 @@ header h1 {
 
 /* ---- Utility ---- */
 
-.hidden {
-  display: none;
-}
-
-
+.hidden { display: none; }
