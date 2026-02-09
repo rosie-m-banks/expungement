@@ -45,9 +45,26 @@ function renderQuestions(questions) {
     group.className = "question-group";
 
     const label = document.createElement("label");
-    label.textContent = q.question;
     label.setAttribute("for", `q-${i}`);
-    group.appendChild(label);
+
+    if (q.question.includes("\n")) {
+      const parts = q.question.split("\n").filter((l) => l.trim());
+      label.textContent = parts[0];
+      group.appendChild(label);
+      if (parts.length > 1) {
+        const ul = document.createElement("ul");
+        ul.className = "question-bullets";
+        parts.slice(1).forEach((line) => {
+          const li = document.createElement("li");
+          li.textContent = line.trim();
+          ul.appendChild(li);
+        });
+        group.appendChild(ul);
+      }
+    } else {
+      label.textContent = q.question;
+      group.appendChild(label);
+    }
 
     const rtype = q.response_type;
 

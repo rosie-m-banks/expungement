@@ -1,67 +1,93 @@
 /* ---- Result cards ---- */
 
 .result-item {
-  background: #f8fafc;
+  background: var(--cream);
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 12px;
-  border-left: 4px solid #cbd5e1;
+  border-left: 4px solid var(--crimson);
 }
 
 .result-item h3 {
   margin: 0 0 6px;
+  font-family: 'Lora', Georgia, serif;
   font-size: 16px;
+  color: var(--crimson-dark);
 }
 
 .result-item .eligible {
-  color: #059669;
+  color: #166534;
   font-weight: 600;
 }
 
 .result-item .ineligible {
-  color: #dc2626;
+  color: #b91c1c;
   font-weight: 600;
 }
 
 .result-item .case-details {
   margin: 8px 0 0;
   padding: 10px 12px;
-  background: #f1f5f9;
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
-  color: #475569;
-  white-space: pre-line;
+  color: var(--text-muted);
   font-family: inherit;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+/* When rendered as a bullet list */
+ul.case-details {
+  padding-left: 28px;
+  list-style: disc;
+}
+
+ul.case-details li {
+  margin-bottom: 4px;
+}
+
+ul.case-details li:last-child {
+  margin-bottom: 0;
+}
+
+/* Message banners that become bullet lists */
+ul.result-message {
+  padding-left: 28px;
+  list-style: disc;
+}
+
+ul.result-message li {
+  margin-bottom: 4px;
+}
+
+ul.result-message li:last-child {
+  margin-bottom: 0;
 }
 
 /* ---- Message banner (e.g. "not eligible") ---- */
 
 .result-message {
   background: #fef3c7;
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid #d97706;
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 12px;
   font-weight: 600;
 }
 
-/* ---- Spinner (imported from questions.css or inline) ---- */
+/* ---- Spinner ---- */
 
 .spinner {
   width: 36px;
   height: 36px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 4px solid var(--cream-dark);
+  border-top-color: var(--crimson);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   margin: 16px 0;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
-
-
