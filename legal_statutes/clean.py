@@ -1,4 +1,4 @@
-with open("section571.txt", "r") as file:
+with open("SORA.txt", "r") as file:
     lines = file.readlines()
     cleaned_lines = []
     current_line = ""
@@ -10,6 +10,6 @@ with open("section571.txt", "r") as file:
         else:
             current_line += f" {line}"
     cleaned_lines.append(current_line)
-    with open("section571_clean.txt", "w") as file:
+    with open("SORA.txt", "w") as file:
         for line in cleaned_lines:
             file.write(line + "\n")
