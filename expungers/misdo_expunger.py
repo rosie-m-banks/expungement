@@ -1,7 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 
-import misdemeanor
+import case_classes.misdemeanor as misdemeanor
 
 class MisdoExpunger():
     def __init__(self, misdemeanors, case_results) -> None:
@@ -14,7 +14,7 @@ class MisdoExpunger():
             if i in self.case_results:
                 continue
             if self.misdemeanors[i].resolved:
-                self.case_results[self.misdemeanors[i].case_name] = "Immediately expungeable"
+                self.case_results[self.misdemeanors[i].case_name] = "Immediately expungeable because case resolved by any of \nAcquittal\nReversed on appeal, dismissed by DA\nDismissed on appeal\nDNA dismissal \nFull pardon by governor \nArrest, no charges filed\nUnder 18, full pardon\nIdentity theft"
 
     def find_drug_dismissed_misdos(self):
         drug_dismiss = []
@@ -32,7 +32,7 @@ class MisdoExpunger():
             if not self.misdemeanors[index].fines_paid:
                 self.case_results[case_name] = "Not expungeable since fines, fess, or restitution not paid."
                 continue
-            self.case_results[case_name] = "Expungeable due to dismissal after drug court."
+            self.case_results[case_name] = "Expungeable due to dismissal after drug court, drug program completed, and fines, fees, and restitution fully paid."
 
     def expunge_convictions(self, index):
         case_name = self.misdemeanors[index].case_name

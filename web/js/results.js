@@ -75,13 +75,17 @@ function displayResults(results) {
 
   results.forEach((item) => {
     if (item.type === "cases") {
-      for (const [caseName, verdict] of Object.entries(item.data)) {
+      for (const [caseName, value] of Object.entries(item.data)) {
         const card = document.createElement("div");
         card.className = "result-item";
 
         const nameEl = document.createElement("h3");
         nameEl.textContent = caseName;
         card.appendChild(nameEl);
+
+        // value is either a string (legacy) or {verdict, details}
+        const verdict = typeof value === "object" ? value.verdict : value;
+        const details = typeof value === "object" ? value.details : null;
 
         const verdictEl = document.createElement("p");
         verdictEl.textContent = verdict;
@@ -91,6 +95,13 @@ function displayResults(results) {
             ? "eligible"
             : "ineligible";
         card.appendChild(verdictEl);
+
+        if (details) {
+          const detailsEl = document.createElement("pre");
+          detailsEl.className = "case-details";
+          detailsEl.textContent = details;
+          card.appendChild(detailsEl);
+        }
 
         resultsContainer.appendChild(card);
       }
@@ -123,4 +134,5 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   });
 });
+
 

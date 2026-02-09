@@ -21,6 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (submitBtn) {
     submitBtn.addEventListener("click", () => submitAndNavigate(questions));
   }
+
+  const restartBtn = document.getElementById("restart-btn");
+  if (restartBtn) {
+    restartBtn.addEventListener("click", () => {
+      clearSession();
+      window.location.href = "index.html";
+    });
+  }
 });
 
 /* ------------------------------------------------------------------ */
@@ -190,4 +198,5 @@ async function submitAndNavigate(questions) {
     showError(String(err));
   }
 }
+
 

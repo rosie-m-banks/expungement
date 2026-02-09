@@ -4,27 +4,31 @@
         "response_type": "String"
     },
     "q2": {
+        "question": "Please input the arresting agency",
+        "response_type": "String"
+    },
+    "q3": {
         "question": "Was the case resolved by any of \nAcquittal\nReversed on appeal, dismissed by DA\nDismissed on appeal\nDNA dismissal \nFull pardon by governor \nArrest, no charges filed\nUnder 18, full pardon\nIdentity theft",
         "response_type": "Boolean"
     },
-    "q3": {
+    "q4": {
         "question": "Did this case resulted in conviction, dismissal, dismissal on deferred judgment, dismissed on completion of drug court",
         "response_type": "Int",
         "options": ["N/A", "Conviction", "Dismissal", "Dismissal on deferred judgment", "Dismissed on completion of drug court"]
     },
-    "q4": {
+    "q5": {
         "question": "If applicable, have all treatment programs been completed? Say 'yes' if it does not apply",
         "response_type": "Boolean"
     },
-    "q5": {
+    "q6": {
         "question": "What was the sentencing / probation completion date",
         "response_type": "Date"
     },
-    "q6": {
+    "q7": {
         "question": "Have all fines, fees, and restitution been paid?",
         "response_type": "Boolean"
     },
-    "q7": {
+    "q8": {
         "question": "Does any of the following apply? \nSOL Expired \nDA has confirmed in writing they will not refile \nCase dismissed with costs, and costs paid or waived",
         "response_type": "Boolean"
     }

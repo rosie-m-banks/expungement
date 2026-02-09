@@ -1,7 +1,8 @@
 class Felony():
-    def __init__(self, case_name, resolved, convic_dismiss_defer_drug, 
+    def __init__(self, case_name, arresting_agency, resolved, convic_dismiss_defer_drug, 
                  counts, sentencing_date, fines_paid, expir_no_risk, treatment):
         self.resolved = resolved
+        self.arresting_agency = arresting_agency
         self.convic_dismiss_defer_drug = convic_dismiss_defer_drug
         self.counts = counts
         self.sentencing_date = sentencing_date

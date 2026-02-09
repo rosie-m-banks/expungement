@@ -84,6 +84,7 @@ class Session:
         self.status: str = "collecting"  # collecting | data_collected | analyzing | done | error
         self.misdos: list | None = None
         self.felons: list | None = None
+        self.arrests: list | None = None
         self.results: list | None = None
         self.error_message: str | None = None
 
@@ -98,13 +99,14 @@ class Session:
 
     def _gather_worker(self) -> None:
         try:
-            misdos, felons = screening.gather(
+            misdos, felons, arrests = screening.gather(
                 input_manager=self.input_manager,
                 output_manager=self.output_manager,
             )
             with self._lock:
                 self.misdos = misdos
-                self.felons = felons
+                self.felons = felons   
+                self.arrests = arrests
                 self.status = "data_collected"
         except Exception as exc:
             import traceback
@@ -125,7 +127,7 @@ class Session:
 
     def _analyze_worker(self) -> None:
         try:
-            screening.analyze(self.misdos, self.felons, self.output_manager)
+            screening.analyze(self.misdos, self.felons, self.arrests, self.output_manager)
             results = self.output_manager.drain_results()
             with self._lock:
                 self.results = results

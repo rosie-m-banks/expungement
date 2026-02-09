@@ -12,7 +12,7 @@
         "response_type": "Boolean"
     },
     "q4": {
-        "question": "How many felony and misdemeanor cases does your client have?",
+        "question": "How many cases does your client have (felony, misdemeanor, or arrest no charges filed)?",
         "response_type": "Int"
     }
 }
