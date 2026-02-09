@@ -38,7 +38,7 @@ class GetCosineSimilarity():
 
     def get_k_best_cosine_similarity(self, query, k=5):
         result = genai.embed_content(
-            model="models/models/gemini-embedding-001",
+            model="models/gemini-embedding-001",
             content=query,
         )
         query_embedding = np.array(result['embedding'])
