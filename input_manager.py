@@ -20,7 +20,7 @@ class InputManager():
             return True
         return False
 
-    def check_file_contents(self, filename, match):
+    def check_file_contents(self, filename, query):
         filepath = os.path.join(BASE_DIR, filename) if not os.path.isabs(filename) else filename
         if filepath not in self.files:
             similarity_engine = GetCosineSimilarity()
@@ -29,14 +29,11 @@ class InputManager():
         cosine_checker = self.files[filepath]
         match = None
         try:
-            match = cosine_checker.get_matching_crime(match)
+            match = cosine_checker.get_matching_crime(query)
         except Exception as e:
             print(f"Error when getting querying gemini, {e}. Defaulting to None, will need attorney review")
         print (match)
         return match != None
-        # if cosine_checker is None:
-        #     return False
-        # return True
 
     def ask_questions(self, filenames):
         """Read question JSON file(s), enqueue for the web frontend, block until
