@@ -56,6 +56,8 @@ def build_details(case):
     lines = []
     if hasattr(case, "arresting_agency"):
         lines.append(f"Arresting agency: {case.arresting_agency}")
+    if hasattr(case, "court"):
+        lines.append(f"Court: {case.court}")
     if hasattr(case, "arrest_date"):
         lines.append(f"Arrest date: {case.arrest_date.strftime('%m-%d-%Y') if hasattr(case.arrest_date, 'strftime') else case.arrest_date}")
     if hasattr(case, "sentencing_date") and case.sentencing_date is not None:

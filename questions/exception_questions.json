@@ -8,10 +8,14 @@
         "response_type": "String"
     },
     "q3": {
-        "question": "Does any of the following apply? \nSOL Expired \nDA has confirmed in writing they will not refile \nCase dismissed with costs, and costs paid or waived",
-        "response_type": "Boolean"
+        "question": "Please input the court",
+        "response_type": "String"
     },
     "q4": {
+            "question": "Does any of the following apply? \nSOL Expired \nDA has confirmed in writing they will not refile \nCase dismissed with costs, and costs paid or waived",
+        "response_type": "Boolean"
+    },
+    "q5": {
         "question": "Please input the arrest date",
         "response_type": "Date"
     }

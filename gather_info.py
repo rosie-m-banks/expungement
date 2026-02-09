@@ -19,25 +19,25 @@ class InformationGatherer():
 
 
     def get_misdo(self):
-        case_name, arresting_agency, resolved, convic_dismiss_defer_drug, treatment, \
+        case_name, arresting_agency, court, resolved, convic_dismiss_defer_drug, treatment, \
             sentencing_date, fines_paid, expir_no_risk, fine_amount, imprisoned \
                 = self.inputManager.ask_questions(["questions/shared_questions.json","questions/misdo_questions.json"])
         return Misdemeanor(resolved=resolved, convic_dismiss_defer_drug=convic_dismiss_defer_drug, treatment=treatment,
-                           arresting_agency=arresting_agency,
+                           arresting_agency=arresting_agency, court=court,
                            sentencing_date=sentencing_date, fines_paid=fines_paid, expir_no_risk=expir_no_risk, 
                            case_name=case_name, fine_amount=fine_amount, imprisoned=imprisoned)
 
     def get_felony(self):
-        case_name, arresting_agency,resolved, convic_dismiss_defer_drug, treatment, \
+        case_name, arresting_agency, court, resolved, convic_dismiss_defer_drug, treatment, \
             sentencing_date, fines_paid, expir_no_risk, counts \
                 = self.inputManager.ask_questions(["questions/shared_questions.json", "questions/felony_questions.json"])
         return Felony(resolved=resolved, convic_dismiss_defer_drug=convic_dismiss_defer_drug, sentencing_date=sentencing_date, 
                         fines_paid=fines_paid, counts=counts, expir_no_risk=expir_no_risk, 
-                        case_name=case_name, treatment=treatment, arresting_agency=arresting_agency   )
+                        case_name=case_name, treatment=treatment, arresting_agency=arresting_agency, court=court   )
 
     def get_arrest(self):
-        case_name, arresting_agency, expir_no_risk, arrest_date = self.inputManager.ask_questions(["questions/exception_questions.json"])
-        return Arrest(case_name=case_name, arresting_agency=arresting_agency, expir_no_risk=expir_no_risk, arrest_date=arrest_date, resolved=True)
+        case_name, arresting_agency, court, expir_no_risk, arrest_date = self.inputManager.ask_questions(["questions/exception_questions.json"])
+        return Arrest(case_name=case_name, arresting_agency=arresting_agency, court=court, expir_no_risk=expir_no_risk, arrest_date=arrest_date, resolved=True)
 
     def gatherInfo(self):
         self.prelim_questions()
