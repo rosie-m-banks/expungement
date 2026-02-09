@@ -1,15 +1,13 @@
 import os
-from sentence_transformers import SentenceTransformer
 import numpy as np
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 class GetCosineSimilarity():
-    def __init__(self, model: SentenceTransformer | None = None, client = None):
+    def __init__(self, client=None):
         
         genai.configure(api_key=os.environ["GEMINI_API_KEY"])
         
-        self.model = model if model is not None else SentenceTransformer("all-MiniLM-L6-v2")
         self.client = client if client is not None else genai.GenerativeModel('gemini-2.5-flash')
         self.embeddings = []
         self.crimes = []
@@ -28,11 +26,22 @@ class GetCosineSimilarity():
         self.embeddings = self.embed_text(crimes)
 
     def embed_text(self, text:list[str]):
-        embeddings =  self.model.encode(text, normalize_embeddings=True)
+        result = genai.embed_content(
+            model="models/gemini-embedding-001",
+            content=text,
+        )
+        embeddings = np.array(result['embedding'])
+        # Normalize embeddings
+        norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+        embeddings = embeddings / norms
         return embeddings
 
     def get_k_best_cosine_similarity(self, query, k=5):
-        query_embedding = self.model.encode(query, normalize_embeddings=True)
+        result = genai.embed_content(
+            model="models/models/gemini-embedding-001",
+            content=query,
+        )
+        query_embedding = np.array(result['embedding'])
         scores = np.dot(self.embeddings, query_embedding)
         top_indices = np.argsort(scores)[-k:][::-1]
 

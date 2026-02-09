@@ -1,4 +1,2 @@
-huggingface_hub
-sentence-transformers
 numpy
-google.generativeai
+google-generativeai

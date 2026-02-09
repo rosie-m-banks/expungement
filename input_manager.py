@@ -12,7 +12,6 @@ class InputManager():
         self._question_queue = queue.Queue()
         self._answer_queue = queue.Queue()
         self.files = {}
-        self._shared_model = None
 
     def check_ans(self, answer):
         if isinstance(answer, bool):
@@ -24,10 +23,7 @@ class InputManager():
     def check_file_contents(self, filename, match):
         filepath = os.path.join(BASE_DIR, filename) if not os.path.isabs(filename) else filename
         if filepath not in self.files:
-            if self._shared_model is None:
-                from sentence_transformers import SentenceTransformer
-                self._shared_model = SentenceTransformer("all-MiniLM-L6-v2")
-            similarity_engine = GetCosineSimilarity(model=self._shared_model)
+            similarity_engine = GetCosineSimilarity()
             similarity_engine.embed_file(filepath)
             self.files[filepath] = similarity_engine
         cosine_checker = self.files[filepath]
