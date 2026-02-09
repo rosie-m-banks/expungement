@@ -2,6 +2,7 @@ import json
 import os
 import queue
 from datetime import datetime
+from legal_statutes.embeddings import GetCosineSimilarity
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -10,6 +11,7 @@ class InputManager():
     def __init__(self):
         self._question_queue = queue.Queue()
         self._answer_queue = queue.Queue()
+        self.files = {}
 
     def check_ans(self, answer):
         if isinstance(answer, bool):
@@ -20,11 +22,21 @@ class InputManager():
 
     def check_file_contents(self, filename, match):
         filepath = os.path.join(BASE_DIR, filename) if not os.path.isabs(filename) else filename
-        with open(filepath, 'r') as file:
-            for line in file:
-                if line == match:
-                    return True
-        return False
+        if filepath not in self.files:
+            similarity_engine = GetCosineSimilarity()
+            similarity_engine.embed_file(filepath)
+            self.files[filepath] = similarity_engine
+        cosine_checker = self.files[filepath]
+        match = None
+        try:
+            match = cosine_checker.get_matching_crime(match)
+        except Exception as e:
+            print(f"Error when getting querying gemini, {e}. Defaulting to None, will need attorney review")
+        print (match)
+        return match != None
+        # if cosine_checker is None:
+        #     return False
+        # return True
 
     def ask_questions(self, filenames):
         """Read question JSON file(s), enqueue for the web frontend, block until

@@ -1,3 +1,4 @@
-# No external dependencies — stdlib only.
-# This file exists so hosting platforms (Render, Railway, etc.) detect Python.
-
+huggingface_hub
+sentence-transformers
+numpy
+google.genai
