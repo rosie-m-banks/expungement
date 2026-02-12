@@ -5,21 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Expungement Screening</title>
     <link rel="stylesheet" href="css/common.css" />
+    <style>
+      .hero-card {
+        text-align: center;
+        padding: 48px 32px;
+      }
+      .hero-card .lead {
+        max-width: 480px;
+        margin: 0 auto;
+        font-size: 16px;
+        line-height: 1.75;
+      }
+      .hero-card .btn-row {
+        justify-content: center;
+        margin-top: 36px;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        margin-top: 32px;
+        background: var(--border-light);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+      @media (max-width: 640px) {
+        .features { grid-template-columns: 1fr; }
+      }
+      .feature {
+        padding: 24px 20px;
+        background: var(--surface);
+        text-align: left;
+      }
+      .feature h3 {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--crimson-dark);
+        margin-bottom: 6px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .feature p {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+      .divider {
+        width: 48px;
+        height: 1px;
+        background: var(--border);
+        margin: 24px auto;
+      }
+    </style>
   </head>
   <body>
     <main class="container">
       <header>
         <h1>Expungement Screening</h1>
-        <p class="subtitle">Determine expungement eligibility for your client.</p>
+        <p class="subtitle">Oklahoma case eligibility analysis</p>
       </header>
 
       <div id="error-text" class="error"></div>
 
-      <section class="card">
-        <p>This tool will walk you through a series of questions about your client's
-           case history and then analyze eligibility for expungement.</p>
+      <section class="card hero-card">
+        <p class="lead">A rules-based screening tool for Oklahoma expungement eligibility. Answer a guided series of questions about your client's case history to receive an analysis grounded in statutory criteria.</p>
+
+        <div class="features">
+          <div class="feature">
+            <h3>Rules-Based</h3>
+            <p>Eligibility determined by codified Oklahoma statutory criteria and decision logic.</p>
+          </div>
+          <div class="feature">
+            <h3>Statute Matching</h3>
+            <p>Uses cosine similarity to surface the most relevant legal provisions for each case.</p>
+          </div>
+          <div class="feature">
+            <h3>Structured Output</h3>
+            <p>Clear, per-case eligibility results with supporting statutory references.</p>
+          </div>
+        </div>
+
         <div class="btn-row">
-          <button id="start-btn" class="primary-btn">Start Session</button>
+          <button id="start-btn" class="primary-btn">Begin Screening</button>
         </div>
       </section>
     </main>

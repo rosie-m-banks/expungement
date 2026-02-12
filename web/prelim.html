@@ -14,14 +14,33 @@
         <p class="subtitle">Preliminary eligibility questions</p>
       </header>
 
+      <div class="progress-bar">
+        <div>
+          <div class="progress-step active"></div>
+          <div class="step-label active">Preliminary</div>
+        </div>
+        <div>
+          <div class="progress-step"></div>
+          <div class="step-label">Cases</div>
+        </div>
+        <div>
+          <div class="progress-step"></div>
+          <div class="step-label">Details</div>
+        </div>
+        <div>
+          <div class="progress-step"></div>
+          <div class="step-label">Results</div>
+        </div>
+      </div>
+
       <div id="error-text" class="error"></div>
 
       <section class="card">
         <h2>Preliminary Questions</h2>
         <form id="questions-form"></form>
         <div class="btn-row">
-          <button id="restart-btn" type="button" class="secondary-btn">Start Over</button>
-          <button id="submit-answers-btn" type="button" class="primary-btn">Continue</button>
+          <button id="restart-btn" type="button" class="secondary-btn">&larr; Start Over</button>
+          <button id="submit-answers-btn" type="button" class="primary-btn">Continue &rarr;</button>
         </div>
       </section>
     </main>
@@ -30,5 +49,3 @@
     <script src="js/questions.js"></script>
   </body>
 </html>
-
-
