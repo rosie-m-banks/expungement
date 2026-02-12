@@ -1,93 +1,164 @@
-/* ---- Result cards ---- */
-
 .result-item {
-  background: var(--cream);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 12px;
-  border-left: 4px solid var(--crimson);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition);
+  animation: fadeInUp 0.4s ease-out;
+  animation-fill-mode: both;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-item:nth-child(1) { animation-delay: 0.05s; }
+.result-item:nth-child(2) { animation-delay: 0.1s; }
+.result-item:nth-child(3) { animation-delay: 0.15s; }
+.result-item:nth-child(4) { animation-delay: 0.2s; }
+.result-item:nth-child(5) { animation-delay: 0.25s; }
+
+.result-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--crimson);
+  border-radius: 2px 0 0 2px;
+}
+
+.result-item:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .result-item h3 {
-  margin: 0 0 6px;
-  font-family: 'Lora', Georgia, serif;
-  font-size: 16px;
-  color: var(--crimson-dark);
+  margin: 0 0 10px;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.2px;
 }
 
 .result-item .eligible {
-  color: #166534;
+  display: inline-block;
+  color: var(--success);
   font-weight: 600;
+  font-size: 14px;
+  background: var(--success-bg);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .result-item .ineligible {
-  color: #b91c1c;
+  display: inline-block;
+  color: var(--danger);
   font-weight: 600;
+  font-size: 14px;
+  background: var(--danger-bg);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .result-item .case-details {
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  margin: 14px 0 0;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-family: inherit;
-  line-height: 1.6;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
-/* When rendered as a bullet list */
 ul.case-details {
   padding-left: 28px;
-  list-style: disc;
+  list-style: none;
 }
 
 ul.case-details li {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  position: relative;
+  padding-left: 16px;
+}
+
+ul.case-details li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--crimson-light);
 }
 
 ul.case-details li:last-child {
   margin-bottom: 0;
 }
 
-/* Message banners that become bullet lists */
 ul.result-message {
   padding-left: 28px;
-  list-style: disc;
+  list-style: none;
 }
 
 ul.result-message li {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  position: relative;
+  padding-left: 16px;
+}
+
+ul.result-message li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--warning);
 }
 
 ul.result-message li:last-child {
   margin-bottom: 0;
 }
 
-/* ---- Message banner (e.g. "not eligible") ---- */
-
 .result-message {
-  background: #fef3c7;
-  border-left: 4px solid #d97706;
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 12px;
-  font-weight: 600;
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--warning);
+  animation: fadeInUp 0.4s ease-out;
 }
 
-/* ---- Spinner ---- */
-
 .spinner {
-  width: 36px;
-  height: 36px;
-  border: 4px solid var(--cream-dark);
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--cream-dark);
   border-top-color: var(--crimson);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin: 16px 0;
+  animation: spin 0.8s linear infinite;
+  margin: 24px auto;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.analyzing-card {
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.analyzing-card p {
+  margin-top: 8px;
+  font-size: 15px;
 }

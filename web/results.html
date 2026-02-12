@@ -14,30 +14,46 @@
         <p class="subtitle">Analysis results</p>
       </header>
 
+      <div class="progress-bar">
+        <div>
+          <div class="progress-step completed"></div>
+          <div class="step-label completed">Preliminary</div>
+        </div>
+        <div>
+          <div class="progress-step completed"></div>
+          <div class="step-label completed">Cases</div>
+        </div>
+        <div>
+          <div class="progress-step completed"></div>
+          <div class="step-label completed">Details</div>
+        </div>
+        <div>
+          <div class="progress-step active"></div>
+          <div class="step-label active">Results</div>
+        </div>
+      </div>
+
       <div id="error-text" class="error"></div>
 
-      <!-- Data collection complete — prompt user to start analysis -->
-      <section id="ready-section" class="card">
+      <section id="ready-section" class="card" style="text-align:center; padding:48px 32px;">
         <h2>Data Collection Complete</h2>
-        <p>All required information has been collected successfully.</p>
-        <div class="btn-row">
-          <button id="analyze-btn" class="primary-btn accent-btn">Start Analysis</button>
+        <p>All required information has been gathered. Run the expungement analysis to evaluate eligibility against statutory criteria.</p>
+        <div class="btn-row" style="justify-content:center;">
+          <button id="analyze-btn" class="primary-btn accent-btn">Run Analysis</button>
         </div>
       </section>
 
-      <!-- Analyzing spinner -->
-      <section id="analyzing-section" class="card hidden">
-        <h2>Analyzing</h2>
-        <p>Processing expungement eligibility. Please wait&hellip;</p>
+      <section id="analyzing-section" class="card analyzing-card hidden">
+        <h2>Analyzing Eligibility</h2>
         <div class="spinner"></div>
+        <p>Reviewing statutes and case details. This may take a moment.</p>
       </section>
 
-      <!-- Final results -->
       <section id="results-section" class="card hidden">
-        <h2>Results</h2>
+        <h2>Eligibility Results</h2>
         <div id="results-container"></div>
-        <div class="btn-row">
-          <button id="restart-btn" class="primary-btn">Start New Session</button>
+        <div class="btn-row" style="justify-content:center; margin-top:32px;">
+          <button id="restart-btn" class="primary-btn">New Screening</button>
         </div>
       </section>
     </main>
@@ -46,5 +62,3 @@
     <script src="js/results.js"></script>
   </body>
 </html>
-
-

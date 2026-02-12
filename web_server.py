@@ -201,6 +201,12 @@ class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
     # -- routing ---------------------------------------------------------
 
     def do_GET(self) -> None:
@@ -386,7 +392,7 @@ def main() -> None:
     if not os.path.isdir(WEB_DIR):
         raise RuntimeError(f"Missing web directory at {WEB_DIR}")
     host = os.environ.get("HOST", "0.0.0.0")
-    port = int(os.environ.get("PORT", "8000"))
+    port = int(os.environ.get("PORT", "5000"))
     server = ThreadedHTTPServer((host, port), AppHandler)
     print(f"Serving on http://{host}:{port}")
     server.serve_forever()
