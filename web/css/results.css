@@ -139,6 +139,24 @@ ul.result-message li:last-child {
   animation: fadeInUp 0.4s ease-out;
 }
 
+/* ---- Inline links in results ---- */
+
+.result-item a,
+.result-message a {
+  color: var(--crimson);
+  text-decoration: underline;
+  text-decoration-color: rgba(132, 22, 23, 0.35);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s;
+}
+
+.result-item a:hover,
+.result-message a:hover {
+  text-decoration-color: var(--crimson);
+}
+
+/* ---- Spinner ---- */
+
 .spinner {
   width: 40px;
   height: 40px;

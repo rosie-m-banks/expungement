@@ -50,11 +50,28 @@ def decode_answers(questions: list[dict], raw_answers: list) -> list:
             decoded.append(float(raw))
         elif rtype == "Date":
             decoded.append(datetime.strptime(str(raw), "%m-%d-%Y"))
+        elif rtype == "DateList":
+            if isinstance(raw, str):
+                raw = raw.strip()
+                if raw in ("", "[]"):
+                    decoded.append([])
+                else:
+                    decoded.append([datetime.strptime(s.strip(), "%m-%d-%Y") for s in raw.split(",")])
+            elif isinstance(raw, list):
+                decoded.append([datetime.strptime(str(s), "%m-%d-%Y") for s in raw])
+            else:
+                decoded.append([])
         elif rtype == "StringList":
-            if isinstance(raw, list):
+            if isinstance(raw, str):
+                raw = raw.strip()
+                if raw in ("", "[]"):
+                    decoded.append([])
+                else:
+                    decoded.append([s.strip() for s in raw.split(",") if s.strip()])
+            elif isinstance(raw, list):
                 decoded.append([s.strip() for s in raw])
             else:
-                decoded.append([s.strip() for s in str(raw).split(",")])
+                decoded.append([])
         else:  # String
             decoded.append(str(raw))
     return decoded
@@ -202,9 +219,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
     def end_headers(self) -> None:
-        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        """Disable caching for all static files during development."""
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
         self.send_header("Pragma", "no-cache")
-        self.send_header("Expires", "0")
         super().end_headers()
 
     # -- routing ---------------------------------------------------------

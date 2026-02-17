@@ -58,7 +58,7 @@ function getNextPage(filenames) {
   const joined = filenames.join(",");
   if (joined.includes("prelim_questions")) return "prelim.html";
   if (joined.includes("case_questions")) return "case-type.html";
-  if (joined.includes("exception_questions")) return "arrest.html";
+  if (joined.includes("arrest_questions")) return "arrest.html";
   if (joined.includes("misdo_questions")) return "misdo.html";
   if (joined.includes("felony_questions")) return "felony.html";
   return null;

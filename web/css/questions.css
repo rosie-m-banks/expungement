@@ -132,6 +132,89 @@
   box-shadow: 0 2px 8px rgba(87,83,78,0.25);
 }
 
+/* ---- Notes ---- */
+
+.question-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.question-note a {
+  color: var(--crimson);
+  text-decoration: underline;
+  text-decoration-color: rgba(132, 22, 23, 0.35);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s;
+}
+
+.question-note a:hover {
+  text-decoration-color: var(--crimson);
+}
+
+/* ---- Dynamic lists (DateList, StringList) ---- */
+
+.dynamic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dynamic-list-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dynamic-list-row input {
+  flex: 1;
+}
+
+.remove-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.remove-btn:hover {
+  background: #fde8e8;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.add-list-btn {
+  margin-top: 6px;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: var(--cream);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.add-list-btn:hover {
+  background: var(--cream-dark);
+  border-color: var(--crimson-light);
+  color: var(--crimson);
+}
+
+/* ---- Spinner ---- */
+
 .spinner {
   width: 40px;
   height: 40px;

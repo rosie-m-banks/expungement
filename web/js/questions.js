@@ -32,6 +32,74 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Note / link helper                                                 */
+/* ------------------------------------------------------------------ */
+
+function renderNote(text, links) {
+  const p = document.createElement("p");
+  p.className = "question-note";
+  let li = 0;
+  text.split(/(<[^>]+>)/).forEach((seg) => {
+    if (seg.startsWith("<") && seg.endsWith(">")) {
+      const a = document.createElement("a");
+      a.textContent = seg.slice(1, -1);
+      a.href = (links && links[li]) || "#";
+      a.target = "_blank";
+      li++;
+      p.appendChild(a);
+    } else {
+      p.appendChild(document.createTextNode(seg));
+    }
+  });
+  return p;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dependency visibility                                              */
+/* ------------------------------------------------------------------ */
+
+function recheckDependencies(form) {
+  form.querySelectorAll("[data-dep-idx]").forEach((group) => {
+    const el = document.getElementById(`q-${group.dataset.depIdx}`);
+    group.style.display = el && el.value === group.dataset.depVal ? "" : "none";
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dynamic-list helpers (DateList, etc.)                              */
+/* ------------------------------------------------------------------ */
+
+function addListItem(list, type, placeholder) {
+  const row = document.createElement("div");
+  row.className = "dynamic-list-row";
+  const inp = document.createElement("input");
+  inp.type = type;
+  if (placeholder) inp.placeholder = placeholder;
+  const rm = document.createElement("button");
+  rm.type = "button";
+  rm.textContent = "\u00d7";
+  rm.className = "remove-btn";
+  rm.addEventListener("click", () => {
+    if (list.querySelectorAll(".dynamic-list-row").length > 1) row.remove();
+  });
+  row.append(inp, rm);
+  list.appendChild(row);
+}
+
+function createDynamicList(parent, id, type, placeholder, addLabel) {
+  const list = document.createElement("div");
+  list.className = "dynamic-list";
+  list.id = id;
+  addListItem(list, type, placeholder);
+  const add = document.createElement("button");
+  add.type = "button";
+  add.textContent = addLabel || "+ Add";
+  add.className = "add-list-btn";
+  add.addEventListener("click", () => addListItem(list, type, placeholder));
+  parent.append(list, add);
+}
+
+/* ------------------------------------------------------------------ */
 /*  Render                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -139,13 +207,10 @@ function renderQuestions(questions) {
       input.id = `q-${i}`;
       input.name = `q-${i}`;
       group.appendChild(input);
+    } else if (rtype === "DateList") {
+      createDynamicList(group, `q-${i}`, "date", "", "+ Add date");
     } else if (rtype === "StringList") {
-      const textarea = document.createElement("textarea");
-      textarea.id = `q-${i}`;
-      textarea.name = `q-${i}`;
-      textarea.placeholder = "Enter items separated by commas";
-      textarea.rows = 3;
-      group.appendChild(textarea);
+      createDynamicList(group, `q-${i}`, "text", "Enter item", "+ Add item");
     } else {
       const input = document.createElement("input");
       input.type = "text";
@@ -155,8 +220,25 @@ function renderQuestions(questions) {
       group.appendChild(input);
     }
 
+    /* note / links */
+    if (q.note) group.appendChild(renderNote(q.note, q.link));
+
+    /* dependency — hide until condition met */
+    if (q.dependancy) {
+      const [depIdx, depVal] = q.dependancy.split(",").map((s) => s.trim());
+      group.dataset.depIdx = depIdx;
+      group.dataset.depVal = depVal;
+      group.style.display = "none";
+    }
+
     form.appendChild(group);
   });
+
+  /* live-recheck dependencies on any interaction */
+  const recheck = () => setTimeout(() => recheckDependencies(form), 0);
+  form.addEventListener("input", recheck);
+  form.addEventListener("change", recheck);
+  form.addEventListener("click", recheck);
 }
 
 /* ------------------------------------------------------------------ */
@@ -165,24 +247,57 @@ function renderQuestions(questions) {
 
 function collectAnswers(questions) {
   const answers = [];
+  const optional = (q) => q.optional === "True";
+  const fallback = (q) => (q.default != null ? q.default : "");
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
     const el = document.getElementById(`q-${i}`);
     if (!el) return null;
 
-    let value = el.value;
+    /* hidden by dependency → send default */
+    const group = el.closest(".question-group");
+    if (group && group.style.display === "none") {
+      answers.push(fallback(q));
+      continue;
+    }
 
-    if (q.response_type === "Boolean") {
-      if (!value) return null;
-    } else if (q.response_type === "Date") {
-      if (!value) return null;
-      const [year, month, day] = value.split("-");
-      value = `${month}-${day}-${year}`;
-    } else if (q.response_type === "Int" || q.response_type === "Float") {
-      if (value === "" || value === undefined) return null;
-    } else if (q.response_type === "String") {
-      if (!value || !value.trim()) return null;
+    let value = el.value;
+    const rtype = q.response_type;
+
+    if (rtype === "Boolean") {
+      if (!value) {
+        if (optional(q)) { answers.push(fallback(q)); continue; }
+        return null;
+      }
+    } else if (rtype === "Date") {
+      if (!value) {
+        if (optional(q)) { answers.push(fallback(q)); continue; }
+        return null;
+      }
+      const [y, m, d] = value.split("-");
+      value = `${m}-${d}-${y}`;
+    } else if (rtype === "Int" || rtype === "Float") {
+      if (value === "" || value === undefined) {
+        if (optional(q)) { answers.push(fallback(q)); continue; }
+        return null;
+      }
+    } else if (rtype === "DateList") {
+      const dates = [...el.querySelectorAll("input[type=date]")]
+        .map((inp) => inp.value)
+        .filter(Boolean)
+        .map((v) => { const [y, m, d] = v.split("-"); return `${m}-${d}-${y}`; });
+      value = dates.length ? dates.join(",") : fallback(q);
+    } else if (rtype === "StringList") {
+      const items = [...el.querySelectorAll("input[type=text]")]
+        .map((inp) => inp.value.trim())
+        .filter(Boolean);
+      value = items.length ? items : fallback(q);
+    } else if (rtype === "String") {
+      if (!value || !value.trim()) {
+        if (optional(q)) { answers.push(fallback(q)); continue; }
+        return null;
+      }
     }
 
     answers.push(value);
