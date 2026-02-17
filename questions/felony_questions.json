@@ -1,6 +1,8 @@
 {
     "q1": {
-        "question": "Can you please input the counts on this case?",
-        "response_type": "StringList"
+        "question": "Can you please input the charges on this case?",
+        "response_type": "StringList",
+        "note": "This field will attempt to screen for <violent> and <85%> crimes",
+        "link": ["https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=84006", "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=104306"]
     }
 }

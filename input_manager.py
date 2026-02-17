@@ -44,10 +44,17 @@ class InputManager():
         questions = []
         for fn in filenames:
             filepath = os.path.join(BASE_DIR, fn) if not os.path.isabs(fn) else fn
+            offset = len(questions)
             with open(filepath, 'r') as f:
                 data = json.load(f)
-                for key in sorted(data.keys(), key=lambda k: int(k[1:])):
-                    questions.append(data[key])
+                keys = sorted(data.keys(), key=lambda k: int(k[1:]))
+                key_to_idx = {k: offset + i for i, k in enumerate(keys)}
+                for key in keys:
+                    q = dict(data[key])
+                    if "dependancy" in q:
+                        dep_key, dep_val = [s.strip() for s in q["dependancy"].split(",")]
+                        q["dependancy"] = f"{key_to_idx[dep_key]},{dep_val}"
+                    questions.append(q)
 
         # Enqueue questions with source filenames for the web server
         self._question_queue.put({"filenames": filenames, "questions": questions})

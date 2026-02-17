@@ -2,7 +2,6 @@ from gather_info import InformationGatherer
 from expungers.felony_expunger import FelonyExpunger
 from expungers.misdo_expunger import MisdoExpunger
 from output_manager import OutputManager
-from input_manager import InputManager
 from expungers.arrest_expunger import ArrestExpunger
 
 def gather(input_manager=None, output_manager=None):
@@ -33,12 +32,8 @@ def analyze(misdos, felons, arrests, output_manager=None):
     felonyExpunger = FelonyExpunger(felonies=felons, misdemeanors=misdos, case_results=case_results)
     can_waive_misdos, case_results = felonyExpunger.expunger()
 
-    if not can_waive_misdos:
-        for i in range(len(misdos)):
-            case_results[misdos[i].case_name] = "Not expungeable because of non-expungeable felony convictions."
-    else:
-        misdoExpunger = MisdoExpunger(misdemeanors=misdos, case_results=case_results)
-        case_results = misdoExpunger.expunger()
+    misdoExpunger = MisdoExpunger(misdemeanors=misdos, case_results=case_results, can_waive_misdos=can_waive_misdos)
+    case_results = misdoExpunger.expunger()
 
     overall_results = {}
     for case in arrests + felons + misdos:
@@ -61,10 +56,12 @@ def build_details(case):
         lines.append(f"Court: {case.court}")
     if hasattr(case, "arrest_date"):
         lines.append(f"Arrest date: {case.arrest_date.strftime('%m-%d-%Y') if hasattr(case.arrest_date, 'strftime') else case.arrest_date}")
+    if hasattr(case, "addl_arrests") and len(case.addl_arrests) > 0:
+        lines.append(f"Additional arrest dates: {[i.strftime('%m-%d-%Y') if hasattr(i, 'strftime') else i for i in case.addl_arrests]}")
     if hasattr(case, "sentencing_date") and case.sentencing_date is not None:
         lines.append(f"Sentencing date: {case.sentencing_date.strftime('%m-%d-%Y') if hasattr(case.sentencing_date, 'strftime') else case.sentencing_date}")
     if hasattr(case, "counts"):
-        lines.append(f"Counts: {', '.join(case.counts)}")
+        lines.append(f"Charges: {', '.join(case.counts)}")
     if hasattr(case, "fine_amount"):
         lines.append(f"Fine amount: ${case.fine_amount}")
     return "\n".join(lines)

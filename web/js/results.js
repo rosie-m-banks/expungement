@@ -59,6 +59,25 @@ async function pollForResults() {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Linked-text helper: parse <text, url> into anchors                 */
+/* ------------------------------------------------------------------ */
+
+function renderLinkedText(text, parent) {
+  text.split(/(<[^>]+>)/).forEach((seg) => {
+    const m = seg.match(/^<(.+?),\s*(https?:\/\/\S+?)>$/);
+    if (m) {
+      const a = document.createElement("a");
+      a.textContent = m[1];
+      a.href = m[2];
+      a.target = "_blank";
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(seg));
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ */
 /*  Display results                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -88,7 +107,7 @@ function displayResults(results) {
         const details = typeof value === "object" ? value.details : null;
 
         const verdictEl = document.createElement("p");
-        verdictEl.textContent = verdict;
+        renderLinkedText(verdict, verdictEl);
         const lower = verdict.toLowerCase();
         verdictEl.className =
           lower.includes("expungeable") && !lower.includes("not expungeable")
@@ -99,7 +118,7 @@ function displayResults(results) {
         if (details) {
           const detailsEl = document.createElement("pre");
           detailsEl.className = "case-details";
-          detailsEl.textContent = details;
+          renderLinkedText(details, detailsEl);
           card.appendChild(detailsEl);
         }
 
@@ -108,7 +127,7 @@ function displayResults(results) {
     } else {
       const msg = document.createElement("div");
       msg.className = "result-message";
-      msg.textContent = item.data;
+      renderLinkedText(item.data, msg);
       resultsContainer.appendChild(msg);
     }
   });

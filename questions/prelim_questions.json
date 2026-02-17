@@ -1,14 +1,14 @@
 {
     "q1": {
-        "question": "Any pending charges?",
+        "question": "Any pending charges or a deferred sentence that has not expired?",
         "response_type": "Boolean"
     },
     "q2": {
-        "question": "Any out of state charges?",
+        "question": "Any out of state or federal charges where the individual has been convicted or obtained a deferred or delayed sentence?",
         "response_type": "Boolean"
     },
     "q3": {
-        "question": "Is your client currently serving a sentence?",
+        "question": "Is your client currently incarcerated or on probation or parole?",
         "response_type": "Boolean"
     },
     "q4": {
