@@ -409,7 +409,7 @@ def main() -> None:
     if not os.path.isdir(WEB_DIR):
         raise RuntimeError(f"Missing web directory at {WEB_DIR}")
     host = os.environ.get("HOST", "0.0.0.0")
-    port = int(os.environ.get("PORT", "8000"))
+    port = int(os.environ.get("PORT", "5000"))
     server = ThreadedHTTPServer((host, port), AppHandler)
     print(f"Serving on http://{host}:{port}")
     server.serve_forever()
