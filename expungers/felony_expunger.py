@@ -79,13 +79,13 @@ class FelonyExpunger:
             else:
                 self.felony_results[case_name] = "Not expungeable. Violent felony under Section 571."
                 return False, 1
-        return False, 1
+        return False, 0
     
     def expunge_conviction_nonviolent(self, index):
         case_name = self.felonies[index].case_name
         if self.num_felony_convictions > 1:
             self.felony_results[case_name] = "Not expungeable. More than one felony conviction."
-            return False, 0
+            return False, 1
         if all(self.today - self.misdemeanor_convictions[i].sentencing_date > timedelta(days=365*7) for i in range(len(self.misdemeanor_convictions))):
             return self.expunge_felony_nonviolent(index)
         max_date = max([self.misdemeanor_convictions[i].sentencing_date for i in range(len(self.misdemeanor_convictions))])
