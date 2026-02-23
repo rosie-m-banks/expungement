@@ -12,14 +12,14 @@ class InformationGatherer():
 
     def prelim_questions(self):
         pending, out_of_state, serving, num_cases = self.inputManager.ask_questions("questions/prelim_questions.json")
-        if self.inputManager.check_ans(pending):
-            self.outputManager.print_out("While some records may be eligible for expungement, such as pardoned cases, many records will not be eligible due to the pending charges or unexpired deferred sentence.  Generally, it is recommended that the person wait until the pending charges are resolved or the deferred sentence has expired.")         
-            return
-        if self.inputManager.check_ans(out_of_state): 
-            self.outputManager.print_out("While there is a process for pardon of federal crimes, there is no process for expungement. This tool is also not appropriate to analyze expungement eligibility for cases in other states. While some Oklahoma records may be expungeable, such as pardoned cases, out-of-state or federal records can complicate the expungement analysis, so this person’s record are not suitable to be analyzed by this tool.")
-            return
-        if self.inputManager.check_ans(serving):
-            self.outputManager.print_out("While some records may be eligible for expungement, such as pardoned cases, many records will not be eligible due to the current sentence being served.  Generally, it is recommended that the person wait until completing their sentence for all cases before applying for expungement.")
+        
+        if self.inputManager.check_ans(pending) or self.inputManager.check_ans(out_of_state) or  self.inputManager.check_ans(serving):
+            if self.inputManager.check_ans(pending):
+                self.outputManager.print_out("While some records may be eligible for expungement, such as pardoned cases, many records will not be eligible due to the pending charges or unexpired deferred sentence.  Generally, it is recommended that the person wait until the pending charges are resolved or the deferred sentence has expired.")         
+            if self.inputManager.check_ans(out_of_state): 
+                self.outputManager.print_out("While there is a process for pardon of federal crimes, there is no process for expungement. This tool is also not appropriate to analyze expungement eligibility for cases in other states. While some Oklahoma records may be expungeable, such as pardoned cases, out-of-state or federal records can complicate the expungement analysis, so this person’s record are not suitable to be analyzed by this tool.")
+            if self.inputManager.check_ans(serving):
+                self.outputManager.print_out("While some records may be eligible for expungement, such as pardoned cases, many records will not be eligible due to the current sentence being served.  Generally, it is recommended that the person wait until completing their sentence for all cases before applying for expungement.")
             return
         self.num_cases = num_cases
 

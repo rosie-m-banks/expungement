@@ -12,8 +12,8 @@
         "response_type": "Date"
     },
     "q4": {
-        "question": "Additional record or arrest dates associated with this case?",
-        "response_type": "DateList",
+        "question": "Additional arrest dates and corresponding arresting agencies for this case?",
+        "response_type": "DateStringPairList",
         "optional": "True",
         "default": "[]"
     },

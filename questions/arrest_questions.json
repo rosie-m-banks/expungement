@@ -14,7 +14,7 @@
     },
 
     "q4": {
-        "question": "Does any of the following apply? \nSOL Expired",
+        "question": "Does any of the following apply? \nSOL Expired\nProsecutor confirmed in writing no charges will be filed",
         "note": "Generally, the statute of limitations under <22 O.S. § 152> is three years, or another period specified in § 152. However some crimes have separate limitations periods found elsewhere in the Oklahoma Statutes.",
         "link": ["https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=70298"],
         "response_type": "Boolean"
