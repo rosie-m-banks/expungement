@@ -57,11 +57,19 @@ def build_details(case):
     if hasattr(case, "arrest_date"):
         lines.append(f"Arrest date: {case.arrest_date.strftime('%m-%d-%Y') if hasattr(case.arrest_date, 'strftime') else case.arrest_date}")
     if hasattr(case, "addl_arrests") and len(case.addl_arrests) > 0:
-        lines.append(f"Additional arrest dates: {[i.strftime('%m-%d-%Y') if hasattr(i, 'strftime') else i for i in case.addl_arrests]}")
+        entries = []
+        for item in case.addl_arrests:
+            if isinstance(item, (list, tuple)) and len(item) == 2:
+                dt, agency = item
+                dt_str = dt.strftime('%m-%d-%Y') if hasattr(dt, 'strftime') else dt
+                entries.append(f"{dt_str} ({agency})")
+            else:
+                entries.append(item.strftime('%m-%d-%Y') if hasattr(item, 'strftime') else str(item))
+        lines.append(f"Additional arrests: {', '.join(entries)}")
     if hasattr(case, "sentencing_date") and case.sentencing_date is not None:
         lines.append(f"Sentencing date: {case.sentencing_date.strftime('%m-%d-%Y') if hasattr(case.sentencing_date, 'strftime') else case.sentencing_date}")
     if hasattr(case, "counts"):
-        lines.append(f"Charges: {', '.join(case.counts)}")
+        lines.append(f"Charges: {', '.join(f'{name} [{cls}]' for name, cls in case.counts)}")
     if hasattr(case, "fine_amount"):
         lines.append(f"Fine amount: ${case.fine_amount}")
     return "\n".join(lines)

@@ -1,8 +1,8 @@
 {
     "q1": {
-        "question": "Can you please input the charges on this case?",
-        "response_type": "StringList",
-        "note": "This field will attempt to screen for <violent> and <85%> crimes",
-        "link": ["https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=84006", "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=104306"]
+        "question": "Can you please input the charges on this case? If it's a property crime, please specify the value of the stolen property.",
+        "response_type": "ClassifiedStringList",
+        "note": "This field will attempt to screen for <reclassified>, <violent>, and <85%> crimes",
+        "link": ["https://www.sos.ok.gov/documents/questions/780.pdf","https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=84006", "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=104306"]
     }
 }

@@ -11,6 +11,22 @@
 .question-group:nth-child(5) { animation-delay: 0.25s; }
 .question-group:nth-child(6) { animation-delay: 0.3s; }
 
+/* highlight unanswered required fields */
+.question-group.missing-field label {
+  color: var(--danger);
+}
+
+.question-group.missing-field input,
+.question-group.missing-field select,
+.question-group.missing-field textarea {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(185,28,28,0.08);
+}
+
+.question-group.missing-field .yesno-btn {
+  border-color: var(--danger);
+}
+
 .question-group label {
   display: block;
   margin-bottom: 8px;
@@ -211,6 +227,112 @@
   background: var(--cream-dark);
   border-color: var(--crimson-light);
   color: var(--crimson);
+}
+
+/* ---- Date + String pair list ---- */
+
+.pair-row .pair-date {
+  flex: 1.25;
+  min-width: 0;
+}
+
+.pair-row .pair-text {
+  flex: 3;
+  min-width: 0;
+}
+
+.classified-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* ---- Classified charge list ---- */
+
+.classified-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.classified-row input[type="text"] {
+  flex: 4;
+  min-width: 0;
+}
+
+.classification-select {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all var(--transition);
+  appearance: auto;
+}
+
+.classification-select:hover {
+  border-color: var(--crimson-light);
+}
+
+.classification-select:focus {
+  outline: none;
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 3px rgba(132,22,23,0.08);
+}
+
+/* per-class border + background tint */
+.classification-select.cls-unclassified {
+  color: var(--text-muted);
+}
+.classification-select.cls-none {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+.classification-select.cls-reclassified {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+.classification-select.cls-571 {
+  border-color: var(--warning);
+  background: var(--warning-bg);
+}
+.classification-select.cls-13-sora {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.classified-btn-row .add-list-btn {
+  margin-top: 0;
+}
+
+.classify-btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.classify-btn:hover {
+  border-color: var(--crimson-light);
+  color: var(--crimson);
+  background: var(--crimson-subtle);
+}
+
+.classify-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ---- Spinner ---- */

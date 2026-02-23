@@ -58,7 +58,7 @@ class GetCosineSimilarity():
         completion = self.client.generate_content(
             f"I have a list of newline separated legal statute descriptions {crime_string}.\
                     I have a legal statute description {query}. Of the counts provided, does this statute match any of them? \
-                    The language may be different, but if the meaning is the same, please return 1. Otherwise, return 0. Do not return anything else.",
+                    The language may be different, but if the meaning is the same, please return that count. Otherwise, return 0. Do not return anything else.",
             safety_settings={
                 HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT:
                 HarmBlockThreshold.BLOCK_NONE,

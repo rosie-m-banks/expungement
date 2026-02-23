@@ -25,6 +25,28 @@ from input_manager import InputManager
 from output_manager import OutputManager
 import screening
 
+
+# ---------------------------------------------------------------------------
+# Count classification (short-circuit AI checks)
+# ---------------------------------------------------------------------------
+
+def classify_count(input_manager: InputManager, count: str) -> str:
+    """Run the short-circuit legal-statute classification for a single charge.
+
+    Order of precedence:
+      reclassified → none → 571 → 13-sora / sora → 571 (violent but not 13/SORA)
+    """
+    if input_manager.check_file_contents("legal_statutes/reclassified.txt", count):
+        return "reclassified"
+    if not input_manager.check_file_contents("legal_statutes/section571.txt", count):
+        return "none"
+    # Violent under 571 — check the two worst-case lists
+    if input_manager.check_file_contents("legal_statutes/section13.txt", count):
+        return "13-sora"
+    if input_manager.check_file_contents("legal_statutes/SORA.txt", count):
+        return "13-sora"
+    return "571"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(BASE_DIR, "web")
 
@@ -61,6 +83,17 @@ def decode_answers(questions: list[dict], raw_answers: list) -> list:
                 decoded.append([datetime.strptime(str(s), "%m-%d-%Y") for s in raw])
             else:
                 decoded.append([])
+        elif rtype == "DateStringPairList":
+            # Each element is a [date_str, agency_str] pair from the frontend.
+            if isinstance(raw, list):
+                pairs = []
+                for item in raw:
+                    if isinstance(item, (list, tuple)) and len(item) == 2:
+                        dt = datetime.strptime(str(item[0]), "%m-%d-%Y")
+                        pairs.append((dt, str(item[1])))
+                decoded.append(pairs)
+            else:
+                decoded.append([])
         elif rtype == "StringList":
             if isinstance(raw, str):
                 raw = raw.strip()
@@ -70,6 +103,19 @@ def decode_answers(questions: list[dict], raw_answers: list) -> list:
                     decoded.append([s.strip() for s in raw.split(",") if s.strip()])
             elif isinstance(raw, list):
                 decoded.append([s.strip() for s in raw])
+            else:
+                decoded.append([])
+        elif rtype == "ClassifiedStringList":
+            # Each element is a [count_name, classification] pair submitted by
+            # the frontend after AI classification + optional manual override.
+            if isinstance(raw, list):
+                pairs = []
+                for item in raw:
+                    if isinstance(item, (list, tuple)) and len(item) == 2:
+                        pairs.append((str(item[0]), str(item[1])))
+                    else:
+                        pairs.append((str(item), "none"))
+                decoded.append(pairs)
             else:
                 decoded.append([])
         else:  # String
@@ -255,6 +301,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/analyze":
             self._handle_analyze()
             return
+        if parsed.path == "/api/classify_counts":
+            self._handle_classify_counts()
+            return
         self.send_error(404, "Unknown API endpoint")
 
     # -- POST /api/start ------------------------------------------------
@@ -330,6 +379,27 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
         ok = session.start_analysis()
         self._send_json({"ok": ok, "status": session.get_status()})
+
+    # -- POST /api/classify_counts --------------------------------------
+
+    def _handle_classify_counts(self) -> None:
+        payload = self._read_json()
+        if payload is None:
+            return
+        session_id = payload.get("session_id")
+        counts = payload.get("counts")
+        if not session_id or counts is None:
+            self.send_error(400, "Missing session_id or counts")
+            return
+        session = get_session(session_id)
+        if not session:
+            self.send_error(404, "Session not found")
+            return
+        results = []
+        for count in counts:
+            cls = classify_count(session.input_manager, str(count))
+            results.append({"count": count, "class": cls})
+        self._send_json({"classifications": results})
 
     # -- GET /api/status ------------------------------------------------
 

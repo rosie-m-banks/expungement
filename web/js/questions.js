@@ -69,6 +69,123 @@ function recheckDependencies(form) {
 /*  Dynamic-list helpers (DateList, etc.)                              */
 /* ------------------------------------------------------------------ */
 
+/* ---- ClassifiedStringList helpers ---- */
+
+const CLASSIFICATION_OPTIONS = [
+  ["",             "Unclassified"],
+  ["none",         "None"],
+  ["reclassified", "Reclassified"],
+  ["571",          "\u00a7571 Violent"],
+  ["13-sora",      "\u00a713 / SORA"],
+];
+
+function updateSelectStyle(sel) {
+  sel.className = "classification-select";
+  const cls = sel.value || "unclassified";
+  sel.classList.add(`cls-${cls}`);
+}
+
+function addClassifiedListItem(list) {
+  const row = document.createElement("div");
+  row.className = "dynamic-list-row classified-row";
+
+  const inp = document.createElement("input");
+  inp.type = "text";
+  inp.placeholder = "Enter charge (e.g. Murder in the First Degree)";
+
+  const sel = document.createElement("select");
+  CLASSIFICATION_OPTIONS.forEach(([val, label]) => {
+    const opt = document.createElement("option");
+    opt.value = val;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+  updateSelectStyle(sel);
+  sel.addEventListener("change", () => updateSelectStyle(sel));
+
+  const rm = document.createElement("button");
+  rm.type = "button";
+  rm.textContent = "\u00d7";
+  rm.className = "remove-btn";
+  rm.addEventListener("click", () => {
+    if (list.querySelectorAll(".classified-row").length > 1) row.remove();
+  });
+
+  row.append(inp, sel, rm);
+  list.appendChild(row);
+}
+
+function createClassifiedList(parent, id) {
+  const list = document.createElement("div");
+  list.className = "dynamic-list";
+  list.id = id;
+  addClassifiedListItem(list);
+
+  const add = document.createElement("button");
+  add.type = "button";
+  add.textContent = "+ Add charge";
+  add.className = "add-list-btn";
+  add.addEventListener("click", () => addClassifiedListItem(list));
+
+  const classifyBtn = document.createElement("button");
+  classifyBtn.type = "button";
+  classifyBtn.textContent = "Classify Charges";
+  classifyBtn.className = "classify-btn";
+  classifyBtn.addEventListener("click", () => classifyCharges(list, classifyBtn));
+
+  const btnRow = document.createElement("div");
+  btnRow.className = "classified-btn-row";
+  btnRow.append(add, classifyBtn);
+
+  parent.append(list, btnRow);
+}
+
+async function classifyCharges(list, btn) {
+  const counts = [...list.querySelectorAll(".classified-row")]
+    .map((row) => row.querySelector("input[type=text]").value.trim())
+    .filter(Boolean);
+
+  if (!counts.length) {
+    showError("Please enter at least one charge before classifying.");
+    return;
+  }
+  showError("");
+
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Classifying\u2026";
+
+  try {
+    const resp = await postJson("/api/classify_counts", {
+      session_id: getSessionId(),
+      counts,
+    });
+
+    // Build a map from count name → class
+    const clsMap = {};
+    (resp.classifications || []).forEach(({ count, class: cls }) => {
+      clsMap[count] = cls;
+    });
+
+    // Update each row's dropdown — user can still override
+    list.querySelectorAll(".classified-row").forEach((row) => {
+      const name = row.querySelector("input[type=text]").value.trim();
+      const sel = row.querySelector("select");
+      if (name && clsMap[name] !== undefined) {
+        sel.value = clsMap[name];
+        updateSelectStyle(sel);
+      }
+    });
+
+    btn.textContent = "Re-classify";
+  } catch (err) {
+    showError("Classification failed: " + String(err));
+    btn.textContent = "Classify Charges";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function addListItem(list, type, placeholder) {
   const row = document.createElement("div");
   row.className = "dynamic-list-row";
@@ -96,6 +213,48 @@ function createDynamicList(parent, id, type, placeholder, addLabel) {
   add.textContent = addLabel || "+ Add";
   add.className = "add-list-btn";
   add.addEventListener("click", () => addListItem(list, type, placeholder));
+  parent.append(list, add);
+}
+
+/* ---- DateStringPairList helpers ---- */
+
+function addDateStringPairItem(list) {
+  const row = document.createElement("div");
+  row.className = "dynamic-list-row pair-row";
+
+  const dateInp = document.createElement("input");
+  dateInp.type = "date";
+  dateInp.className = "pair-date";
+
+  const textInp = document.createElement("input");
+  textInp.type = "text";
+  textInp.className = "pair-text";
+  textInp.placeholder = "Arresting agency";
+
+  const rm = document.createElement("button");
+  rm.type = "button";
+  rm.textContent = "\u00d7";
+  rm.className = "remove-btn";
+  rm.addEventListener("click", () => {
+    if (list.querySelectorAll(".pair-row").length > 1) row.remove();
+  });
+
+  row.append(dateInp, textInp, rm);
+  list.appendChild(row);
+}
+
+function createDateStringPairList(parent, id) {
+  const list = document.createElement("div");
+  list.className = "dynamic-list";
+  list.id = id;
+  addDateStringPairItem(list);
+
+  const add = document.createElement("button");
+  add.type = "button";
+  add.textContent = "+ Add entry";
+  add.className = "add-list-btn";
+  add.addEventListener("click", () => addDateStringPairItem(list));
+
   parent.append(list, add);
 }
 
@@ -209,8 +368,12 @@ function renderQuestions(questions) {
       group.appendChild(input);
     } else if (rtype === "DateList") {
       createDynamicList(group, `q-${i}`, "date", "", "+ Add date");
+    } else if (rtype === "DateStringPairList") {
+      createDateStringPairList(group, `q-${i}`);
     } else if (rtype === "StringList") {
       createDynamicList(group, `q-${i}`, "text", "Enter item", "+ Add item");
+    } else if (rtype === "ClassifiedStringList") {
+      createClassifiedList(group, `q-${i}`);
     } else {
       const input = document.createElement("input");
       input.type = "text";
@@ -247,13 +410,19 @@ function renderQuestions(questions) {
 
 function collectAnswers(questions) {
   const answers = [];
+  const missing = [];
   const optional = (q) => q.optional === "True";
   const fallback = (q) => (q.default != null ? q.default : "");
+
+  /* Clear previous highlights */
+  document.querySelectorAll(".question-group.missing-field").forEach((g) =>
+    g.classList.remove("missing-field")
+  );
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
     const el = document.getElementById(`q-${i}`);
-    if (!el) return null;
+    if (!el) { missing.push(i); continue; }
 
     /* hidden by dependency → send default */
     const group = el.closest(".question-group");
@@ -264,44 +433,77 @@ function collectAnswers(questions) {
 
     let value = el.value;
     const rtype = q.response_type;
+    let empty = false;
 
     if (rtype === "Boolean") {
-      if (!value) {
-        if (optional(q)) { answers.push(fallback(q)); continue; }
-        return null;
-      }
+      empty = !value;
     } else if (rtype === "Date") {
-      if (!value) {
-        if (optional(q)) { answers.push(fallback(q)); continue; }
-        return null;
+      empty = !value;
+      if (!empty) {
+        const [y, m, d] = value.split("-");
+        value = `${m}-${d}-${y}`;
       }
-      const [y, m, d] = value.split("-");
-      value = `${m}-${d}-${y}`;
     } else if (rtype === "Int" || rtype === "Float") {
-      if (value === "" || value === undefined) {
-        if (optional(q)) { answers.push(fallback(q)); continue; }
-        return null;
-      }
+      empty = value === "" || value === undefined;
     } else if (rtype === "DateList") {
       const dates = [...el.querySelectorAll("input[type=date]")]
         .map((inp) => inp.value)
         .filter(Boolean)
         .map((v) => { const [y, m, d] = v.split("-"); return `${m}-${d}-${y}`; });
       value = dates.length ? dates.join(",") : fallback(q);
+    } else if (rtype === "DateStringPairList") {
+      const pairs = [...el.querySelectorAll(".pair-row")]
+        .map((row) => {
+          const d = row.querySelector(".pair-date").value;
+          const t = row.querySelector(".pair-text").value.trim();
+          if (!d || !t) return null;
+          const [y, m, dy] = d.split("-");
+          return [`${m}-${dy}-${y}`, t];
+        })
+        .filter(Boolean);
+      value = pairs.length ? pairs : fallback(q);
     } else if (rtype === "StringList") {
       const items = [...el.querySelectorAll("input[type=text]")]
         .map((inp) => inp.value.trim())
         .filter(Boolean);
       value = items.length ? items : fallback(q);
+    } else if (rtype === "ClassifiedStringList") {
+      const pairs = [...el.querySelectorAll(".classified-row")]
+        .map((row) => {
+          const name = row.querySelector("input[type=text]").value.trim();
+          const cls  = row.querySelector("select").value || "none";
+          return name ? [name, cls] : null;
+        })
+        .filter(Boolean);
+      value = pairs.length ? pairs : fallback(q);
     } else if (rtype === "String") {
-      if (!value || !value.trim()) {
-        if (optional(q)) { answers.push(fallback(q)); continue; }
-        return null;
-      }
+      empty = !value || !value.trim();
+    }
+
+    if (empty) {
+      if (optional(q)) { answers.push(fallback(q)); continue; }
+      missing.push(i);
+      answers.push(null);      /* placeholder to keep indices aligned */
+      continue;
     }
 
     answers.push(value);
   }
+
+  if (missing.length > 0) {
+    /* Highlight every missing field */
+    missing.forEach((idx) => {
+      const el = document.getElementById(`q-${idx}`);
+      const group = el ? el.closest(".question-group") : null;
+      if (group) group.classList.add("missing-field");
+    });
+    /* Scroll to the first one */
+    const firstEl = document.getElementById(`q-${missing[0]}`);
+    const firstGroup = firstEl ? firstEl.closest(".question-group") : null;
+    if (firstGroup) firstGroup.scrollIntoView({ behavior: "smooth", block: "center" });
+    return null;
+  }
+
   return answers;
 }
 
