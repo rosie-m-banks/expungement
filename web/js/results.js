@@ -85,7 +85,39 @@ let _lastResults = null;
 
 function exportResults() {
   if (!_lastResults) return;
-  const blob = new Blob([JSON.stringify(_lastResults, null, 2)], {
+
+  // Merge all case dicts; skip non-case messages
+  const cases = {};
+  for (const item of _lastResults) {
+    if (item.type !== "cases") continue;
+    for (const [caseName, value] of Object.entries(item.data)) {
+      const raw = typeof value === "object" ? value.verdict : value;
+      const parts = raw.split("\n").map((s) => s.trim()).filter(Boolean);
+      const entry = { verdict: parts[0] };
+      if (parts.length > 1) entry.classes = parts.slice(1);
+
+      // Carry over a details string if present — parse "Key: value" lines into an object
+      if (typeof value === "object" && value.details) {
+        const dparts = value.details.split("\n").map((s) => s.trim()).filter(Boolean);
+        const detailsObj = {};
+        for (const line of dparts) {
+          const colon = line.indexOf(":");
+          if (colon !== -1) {
+            const k = line.slice(0, colon).trim();
+            const v = line.slice(colon + 1).trim();
+            detailsObj[k] = v;
+          } else {
+            detailsObj[line] = "";
+          }
+        }
+        entry.details = detailsObj;
+      }
+
+      cases[caseName] = entry;
+    }
+  }
+
+  const blob = new Blob([JSON.stringify({ cases }, null, 2)], {
     type: "application/json",
   });
   const url = URL.createObjectURL(blob);
