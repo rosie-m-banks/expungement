@@ -306,6 +306,11 @@
   background: var(--danger-bg);
 }
 
+.classification-select.unclassified-highlight {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(185,28,28,0.08);
+}
+
 .classified-btn-row .add-list-btn {
   margin-top: 0;
 }

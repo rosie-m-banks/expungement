@@ -468,13 +468,27 @@ function collectAnswers(questions) {
         .filter(Boolean);
       value = items.length ? items : fallback(q);
     } else if (rtype === "ClassifiedStringList") {
+      let hasUnclassified = false;
+      /* Clear previous per-select highlights */
+      el.querySelectorAll(".classification-select.unclassified-highlight").forEach(
+        (s) => s.classList.remove("unclassified-highlight")
+      );
       const pairs = [...el.querySelectorAll(".classified-row")]
         .map((row) => {
           const name = row.querySelector("input[type=text]").value.trim();
-          const cls  = row.querySelector("select").value || "none";
-          return name ? [name, cls] : null;
+          const sel  = row.querySelector("select");
+          if (name && !sel.value) {
+            hasUnclassified = true;
+            sel.classList.add("unclassified-highlight");
+          }
+          return name ? [name, sel.value || "none"] : null;
         })
         .filter(Boolean);
+      if (hasUnclassified) {
+        missing.push(i);
+        answers.push(null);
+        continue;
+      }
       value = pairs.length ? pairs : fallback(q);
     } else if (rtype === "String") {
       empty = !value || !value.trim();
