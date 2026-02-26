@@ -52,9 +52,9 @@ class FelonyExpunger:
             self.felony_results[case_name] = "Not expungeable. Reclassified as misdemeanor. "
             
             if fine and treatment: # only date is bad
-                self.felony_results[case_name] += f"Time since sentencing < 30 days. This may be eligible for expungement after {(self.felonies[index].sentencing_date + timedelta(days=30)).strftime("%m-%d-%Y")}. "
+                self.felony_results[case_name] += f"Time since sentencing < 30 days. This may be eligible for expungement after {(self.felonies[index].sentencing_date + timedelta(days=30)).strftime('%m-%d-%Y')}. "
             elif treatment: # bad fine, maybe bad date
-                self.felony_results[case_name] += f"After {(self.felonies[index].sentencing_date + timedelta(days=30)).strftime("%m-%d-%Y")}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
+                self.felony_results[case_name] += f"After {(self.felonies[index].sentencing_date + timedelta(days=30)).strftime('%m-%d-%Y')}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
             else: 
                 self.felony_results[case_name] += "Treatment program not finished."
             
@@ -96,14 +96,14 @@ class FelonyExpunger:
             return True, 0
         self.felony_results[case_name] = "Not expungeable. "   
         if fine and nonviolent: # just a bad date
-            self.felony_results[case_name] += f"5 year waiting period not yet reached. Client may be eligible after {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")} "    
+            self.felony_results[case_name] += f"5 year waiting period not yet reached. Client may be eligible after {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')} "    
         elif nonviolent: # bad fine and maybe bad date
-            self.felony_results[case_name] += f"After {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
+            self.felony_results[case_name] += f"After {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
         elif fine: # violent and maybe bad date
-            self.felony_results[case_name] += f"This individual may be eligible for expungement after receiving a pardon from the Governor after this date: {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")}.  More information about filing for a pardon can be found <here, https://oklahoma.gov/ppb.html>."
+            self.felony_results[case_name] += f"This individual may be eligible for expungement after receiving a pardon from the Governor after this date: {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')}.  More information about filing for a pardon can be found <here, https://oklahoma.gov/ppb.html>."
             return False, 1
         else: # all maybe bad
-            self.felony_results[case_name] += f"Violent felony under Section 571. After {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")}, this individual may be eligible to receive a pardon after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. \
+            self.felony_results[case_name] += f"Violent felony under Section 571. After {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')}, this individual may be eligible to receive a pardon after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. \
                 If a pardon is received, this individual may be eligible for expungement. More information about filing for a pardon can be found <here, https://oklahoma.gov/ppb.html>. "
         
         return False, 0
@@ -116,7 +116,7 @@ class FelonyExpunger:
         if all(self.today - self.misdemeanor_convictions[i].sentencing_date > timedelta(days=365*7) for i in range(len(self.misdemeanor_convictions))):
             return self.expunge_felony_nonviolent(index)
         max_date = max([self.misdemeanor_convictions[i].sentencing_date for i in range(len(self.misdemeanor_convictions))])
-        self.felony_results[case_name] = f"Not expungeable. Misdemeanor convictions within the last 7 years. Screen again after {(max_date + timedelta(365*7)).strftime("%m-%d-%Y")}."
+        self.felony_results[case_name] = f"Not expungeable. Misdemeanor convictions within the last 7 years. Screen again after {(max_date + timedelta(365*7)).strftime('%m-%d-%Y')}."
         return False, 1
 
     def expunge_felonies_maybe_violent(self, index):
@@ -137,11 +137,11 @@ class FelonyExpunger:
             self.felony_results[case_name] = "Expungeable due to criteria: no counts listed in Section 13, 10 years since sentence completion, all fines paid)."
             return True
         elif not fine and nothorrible:
-            self.felony_results[case_name] = f"Not expungeable. After {(self.felonies[index].sentencing_date + timedelta(days=3650)).strftime("%m-%d-%Y")}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
+            self.felony_results[case_name] = f"Not expungeable. After {(self.felonies[index].sentencing_date + timedelta(days=3650)).strftime('%m-%d-%Y')}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
         elif fine:
-            self.felony_results[case_name] = f"Not expungeable. This individual may be eligible for expungement after receiving a pardon from the Governor after this date: {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")}.  More information about filing for a pardon can be found <here, https://oklahoma.gov/ppb.html>. "
+            self.felony_results[case_name] = f"Not expungeable. This individual may be eligible for expungement after receiving a pardon from the Governor after this date: {(self.felonies[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')}.  More information about filing for a pardon can be found <here, https://oklahoma.gov/ppb.html>. "
             if nothorrible and not dat:
-                self.felony_results[case_name] += f" Alternatively, this case may be expungeable after this date: {(self.felonies[index].sentencing_date + timedelta(days=3650)).strftime("%m-%d-%Y")} "
+                self.felony_results[case_name] += f" Alternatively, this case may be expungeable after this date: {(self.felonies[index].sentencing_date + timedelta(days=3650)).strftime('%m-%d-%Y')} "
         else:
             self.felony_results[case_name] = "Not expungeable. Violent felony under Section 13.1 of Title 21 or SORA. "
              

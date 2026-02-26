@@ -45,11 +45,11 @@ class MisdoExpunger():
             return True
         
         if not self.misdemeanors[index].fines_paid:
-            self.case_results[case_name] = f"Not expungeable since fines, fees, or restitution not paid. After, {(self.misdemeanors[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
+            self.case_results[case_name] = f"Not expungeable since fines, fees, or restitution not paid. After, {(self.misdemeanors[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
                 
             return False
         if self.today - self.misdemeanors[index].sentencing_date < timedelta(days=365*5):
-            self.case_results[case_name] = f"Not expungeable since < 5 years since end of sentence. May be eligible after {(self.misdemeanors[index].sentencing_date + timedelta(days=365*5)).strftime("%m-%d-%Y")}."
+            self.case_results[case_name] = f"Not expungeable since < 5 years since end of sentence. May be eligible after {(self.misdemeanors[index].sentencing_date + timedelta(days=365*5)).strftime('%m-%d-%Y')}."
             return False
         self.case_results[case_name] = "Expungeable. >= 5 years since sentencing, and fines, fees, and restitution fully paid."
         return True
@@ -61,10 +61,10 @@ class MisdoExpunger():
         if self.misdemeanors[index].is_deferred():
             
             if not self.misdemeanors[index].fines_paid:
-                self.case_results[case_name] = f"Not expungeable since fines, fees, or restitution not paid. After, {(self.misdemeanors[index].sentencing_date + timedelta(days=365)).strftime("%m-%d-%Y")}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
+                self.case_results[case_name] = f"Not expungeable since fines, fees, or restitution not paid. After, {(self.misdemeanors[index].sentencing_date + timedelta(days=365)).strftime('%m-%d-%Y')}, this individual may be eligible for expungement after paying their fines and fees or obtaining waiver of their fines and fees pursuant to 22 O.S. § 983.  More information about the waiver process can be found <here, https://www.oklahomafinesandfeeshelp.org/>. "
                 return False
             if self.today - self.misdemeanors[index].sentencing_date < timedelta(days=365):
-                self.case_results[case_name] = f"Not expungeable. < 1 year since dismissal. May be eligible after {(self.misdemeanors[index].sentencing_date + timedelta(days=365)).strftime("%m-%d-%Y")}."
+                self.case_results[case_name] = f"Not expungeable. < 1 year since dismissal. May be eligible after {(self.misdemeanors[index].sentencing_date + timedelta(days=365)).strftime('%m-%d-%Y')}."
                 return False
             self.case_results[case_name] = "Expungeable. > 1 year since dismissal and fines, fees, and restitution fully paid."
             return True
