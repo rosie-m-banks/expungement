@@ -78,10 +78,30 @@ function renderLinkedText(text, parent) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Export results as JSON                                             */
+/* ------------------------------------------------------------------ */
+
+let _lastResults = null;
+
+function exportResults() {
+  if (!_lastResults) return;
+  const blob = new Blob([JSON.stringify(_lastResults, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "expungement_results.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ------------------------------------------------------------------ */
 /*  Display results                                                    */
 /* ------------------------------------------------------------------ */
 
 function displayResults(results) {
+  _lastResults = results;
   resultsContainer.innerHTML = "";
 
   if (!results || results.length === 0) {
@@ -147,6 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("analyze-btn").addEventListener("click", startAnalysis);
+
+  document.getElementById("export-btn").addEventListener("click", exportResults);
 
   document.getElementById("restart-btn").addEventListener("click", () => {
     clearSession();
