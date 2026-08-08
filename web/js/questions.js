@@ -156,10 +156,7 @@ async function classifyCharges(list, btn) {
   btn.textContent = "Classifying\u2026";
 
   try {
-    const resp = await postJson("/api/classify_counts", {
-      session_id: getSessionId(),
-      counts,
-    });
+    const resp = await engine.classifyCounts(counts);
 
     // Build a map from count name → class
     const clsMap = {};
@@ -534,14 +531,17 @@ async function submitAndNavigate(questions) {
   }
 
   try {
-    await postJson("/api/answers", {
-      session_id: getSessionId(),
-      answers: answers,
-    });
-    // Clear consumed questions, then poll for the next batch
+    const next = await engine.submitAnswers(answers);
     sessionStorage.removeItem("current_questions");
     sessionStorage.removeItem("current_filenames");
-    pollAndNavigate();
+    if (next.status === 'data_collected') {
+      window.location.href = 'results.html';
+    } else if (next.status === 'early_exit') {
+      sessionStorage.setItem('early_exit_messages', JSON.stringify(next.messages));
+      window.location.href = 'results.html';
+    } else if (next.questions && next.filenames) {
+      storeAndNavigate(next.questions, next.filenames);
+    }
   } catch (err) {
     showError(String(err));
   }

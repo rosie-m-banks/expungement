@@ -15,6 +15,8 @@ function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem("current_questions");
   sessionStorage.removeItem("current_filenames");
+  sessionStorage.removeItem("engine_state");
+  sessionStorage.removeItem("early_exit_messages");
 }
 
 /* ------------------------------------------------------------------ */
@@ -74,32 +76,6 @@ function storeAndNavigate(questions, filenames) {
   const page = getNextPage(filenames);
   if (page) {
     window.location.href = page;
-  }
-}
-
-/**
- * Poll for the next question batch. When it arrives store it and
- * navigate; if data collection is finished go to the results page.
- */
-async function pollAndNavigate() {
-  const sessionId = getSessionId();
-  if (!sessionId) {
-    window.location.href = "index.html";
-    return;
-  }
-  try {
-    const data = await getJson(`/api/questions?session_id=${sessionId}`);
-    if (data.questions) {
-      storeAndNavigate(data.questions, data.filenames);
-    } else if (data.status === "data_collected") {
-      window.location.href = "results.html";
-    } else if (data.status === "error") {
-      showError(data.error || "An error occurred.");
-    } else {
-      setTimeout(pollAndNavigate, 500);
-    }
-  } catch (err) {
-    showError(String(err));
   }
 }
 

@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject Gemini API key
+        run: |
+          echo "window.GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > web/js/config.js
+
+      - name: Copy static assets into web/
+        run: |
+          mkdir -p web/questions web/legal_statutes
+          cp questions/*.json web/questions/
+          cp legal_statutes/*.txt web/legal_statutes/
+          cp legal_statutes/*_embed.txt web/legal_statutes/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -20,43 +20,16 @@ function showSection(section) {
 
 async function startAnalysis() {
   showError("");
+  showSection(analyzingSection);
   try {
-    await postJson("/api/analyze", { session_id: getSessionId() });
-    showSection(analyzingSection);
-    pollForResults();
-  } catch (err) {
-    showError(String(err));
-  }
-}
-
-/* ------------------------------------------------------------------ */
-/*  Poll for results                                                   */
-/* ------------------------------------------------------------------ */
-
-async function pollForResults() {
-  const sessionId = getSessionId();
-  if (!sessionId) {
-    window.location.href = "index.html";
-    return;
-  }
-  try {
-    const data = await getJson(`/api/status?session_id=${sessionId}`);
-    if (data.status === "done") {
-      const resultData = await getJson(
-        `/api/results?session_id=${sessionId}`
-      );
-      displayResults(resultData.results);
-    } else if (data.status === "error") {
-      showError(data.error || "An error occurred during analysis.");
-      showSection(readySection);
-    } else {
-      setTimeout(pollForResults, 500);
-    }
+    const results = await engine.analyze();
+    displayResults(results);
   } catch (err) {
     showError(String(err));
     showSection(readySection);
   }
 }
+
 
 /* ------------------------------------------------------------------ */
 /*  Linked-text helper: parse <text, url> into anchors                 */
@@ -192,8 +165,7 @@ function displayResults(results) {
 /* ------------------------------------------------------------------ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const sessionId = getSessionId();
-  if (!sessionId) {
+  if (!engine.hasState()) {
     window.location.href = "index.html";
     return;
   }
