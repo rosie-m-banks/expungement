@@ -24,10 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject Gemini API key
-        run: |
-          echo "window.GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > web/js/config.js
-
       - name: Copy static assets into web/
         run: |
           mkdir -p web/questions web/legal_statutes

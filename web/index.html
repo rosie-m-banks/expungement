@@ -57,6 +57,39 @@
         background: var(--border);
         margin: 24px auto;
       }
+      .api-key-section {
+        margin-top: 28px;
+        padding-top: 28px;
+        border-top: 1px solid var(--border-light);
+        text-align: left;
+      }
+      .api-key-section label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+      }
+      .api-key-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .api-key-row input[type="password"] {
+        flex: 1;
+        font-size: 13px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+        color: var(--text);
+        font-family: monospace;
+      }
+      .api-key-note {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
     </style>
   </head>
   <body>
@@ -84,6 +117,14 @@
             <h3>Structured Output</h3>
             <p>Clear, per-case eligibility results with supporting statutory references.</p>
           </div>
+        </div>
+
+        <div class="api-key-section">
+          <label for="gemini-key-input">Gemini API Key <span style="font-weight:400;color:var(--text-secondary)">(required for charge classification)</span></label>
+          <div class="api-key-row">
+            <input type="password" id="gemini-key-input" placeholder="AIza..." autocomplete="off" spellcheck="false" />
+          </div>
+          <p class="api-key-note">Your key is stored only in this browser tab and never sent anywhere except Google's API. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>.</p>
         </div>
 
         <div class="btn-row">

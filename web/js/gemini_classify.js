@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  const SDK_URL = 'https://esm.sh/@google/generative-ai@0.24.0';
+  const SDK_URL = 'https://esm.sh/@google/generative-ai';
 
   /* Cached SDK module, GenAI instance, and per-statute data */
   let _sdkModule = null;
@@ -17,7 +17,8 @@
   async function _ensureSDK() {
     if (_sdkModule) return;
     _sdkModule = await import(SDK_URL);
-    _genAI = new _sdkModule.GoogleGenerativeAI(window.GEMINI_API_KEY || '');
+    const apiKey = sessionStorage.getItem('gemini_api_key') || '';
+    _genAI = new _sdkModule.GoogleGenerativeAI(apiKey);
   }
 
   /* ---- Statute data loading ---- */
@@ -74,7 +75,7 @@
     await _ensureSDK();
     const { HarmCategory, HarmBlockThreshold } = _sdkModule;
     const model = _genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash',
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT,        threshold: HarmBlockThreshold.BLOCK_NONE },

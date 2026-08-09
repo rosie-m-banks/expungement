@@ -17,6 +17,7 @@ function clearSession() {
   sessionStorage.removeItem("current_filenames");
   sessionStorage.removeItem("engine_state");
   sessionStorage.removeItem("early_exit_messages");
+  sessionStorage.removeItem("gemini_api_key");
 }
 
 /* ------------------------------------------------------------------ */

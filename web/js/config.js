@@ -1,0 +1,1 @@
+/* Gemini API key is entered by the user on the landing page and stored in sessionStorage. */
