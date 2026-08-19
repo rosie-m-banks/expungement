@@ -265,6 +265,10 @@ header::after {
   outline-offset: 2px;
 }
 
+.button-link {
+  text-decoration: none;
+}
+
 .btn-row {
   margin-top: 24px;
   display: flex;

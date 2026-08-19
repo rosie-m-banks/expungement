@@ -134,10 +134,9 @@ function displayResults(results) {
         const verdictEl = document.createElement("p");
         renderLinkedText(verdict, verdictEl);
         const lower = verdict.toLowerCase();
-        verdictEl.className =
-          lower.includes("expungeable") && !lower.includes("not expungeable")
-            ? "eligible"
-            : "ineligible";
+        const isEligible =
+          lower.includes("expungeable") && !lower.includes("not expungeable");
+        verdictEl.className = isEligible ? "eligible" : "ineligible";
         card.appendChild(verdictEl);
 
         if (details) {
@@ -145,6 +144,24 @@ function displayResults(results) {
           detailsEl.className = "case-details";
           renderLinkedText(details, detailsEl);
           card.appendChild(detailsEl);
+        }
+
+        if (isEligible) {
+          const actionRow = document.createElement("div");
+          actionRow.className = "result-actions";
+          const petitionButton = document.createElement("button");
+          petitionButton.type = "button";
+          petitionButton.className = "primary-btn petition-btn";
+          petitionButton.textContent = "Generate Petition";
+          petitionButton.addEventListener("click", () => {
+            sessionStorage.setItem(
+              "petition_prefill",
+              JSON.stringify({ caseName, verdict, details: details || "" })
+            );
+            window.location.href = "petition.html";
+          });
+          actionRow.appendChild(petitionButton);
+          card.appendChild(actionRow);
         }
 
         resultsContainer.appendChild(card);
@@ -179,5 +196,4 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   });
 });
-
 

@@ -23,6 +23,12 @@ from urllib.parse import urlparse, parse_qs
 
 from input_manager import InputManager
 from output_manager import OutputManager
+from petition_generator import (
+    PetitionValidationError,
+    generate_petition_pdf,
+    petition_filename,
+)
+from petition_prefill import build_petition_prefill
 import screening
 
 
@@ -283,6 +289,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/results":
             self._handle_get_results(parsed)
             return
+        if parsed.path == "/api/petition-prefill":
+            self._handle_get_petition_prefill(parsed)
+            return
         if parsed.path.startswith("/api/"):
             self.send_error(404, "Unknown API endpoint")
             return
@@ -303,6 +312,9 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
         if parsed.path == "/api/classify_counts":
             self._handle_classify_counts()
+            return
+        if parsed.path == "/api/generate_petition":
+            self._handle_generate_petition()
             return
         self.send_error(404, "Unknown API endpoint")
 
@@ -401,6 +413,31 @@ class AppHandler(SimpleHTTPRequestHandler):
             results.append({"count": count, "class": cls})
         self._send_json({"classifications": results})
 
+    # -- POST /api/generate_petition -----------------------------------
+
+    def _handle_generate_petition(self) -> None:
+        """Validate form data and return a generated petition draft PDF.
+
+        This endpoint is intentionally usable without a screening session so
+        the petition workflow can be tested independently. The results page
+        only surfaces it for cases marked eligible.
+        """
+        payload = self._read_json()
+        if payload is None:
+            return
+        try:
+            pdf_bytes, normalized = generate_petition_pdf(payload)
+        except PetitionValidationError as exc:
+            self._send_json({"error": "Please correct the highlighted petition fields.", "errors": exc.errors}, status=400)
+            return
+        except Exception as exc:
+            import traceback
+            traceback.print_exc()
+            self._send_json({"error": f"Unable to generate petition: {exc}"}, status=500)
+            return
+
+        self._send_pdf(pdf_bytes, petition_filename(normalized["petitioner_name"]))
+
     # -- GET /api/status ------------------------------------------------
 
     def _handle_get_status(self, parsed) -> None:
@@ -433,6 +470,26 @@ class AppHandler(SimpleHTTPRequestHandler):
             "results": serialised,
         })
 
+    # -- GET /api/petition-prefill -------------------------------------
+
+    def _handle_get_petition_prefill(self, parsed) -> None:
+        session = self._session_from_qs(parsed)
+        if session is None:
+            return
+        if session.get_status() != "done":
+            self._send_json(
+                {"error": "Screening analysis must be completed before importing petition matters."},
+                status=409,
+            )
+            return
+        prefill = build_petition_prefill(
+            session.misdos,
+            session.felons,
+            session.arrests,
+            session.get_results(),
+        )
+        self._send_json(prefill)
+
     # -- helpers --------------------------------------------------------
 
     def _session_from_qs(self, parsed) -> Session | None:
@@ -456,12 +513,22 @@ class AppHandler(SimpleHTTPRequestHandler):
             self.send_error(400, "Invalid JSON")
             return None
 
-    def _send_json(self, payload: dict[str, Any]) -> None:
+    def _send_json(self, payload: dict[str, Any], *, status: int = 200) -> None:
         data = json.dumps(payload).encode("utf-8")
-        self.send_response(200)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
         self.send_header("Pragma", "no-cache")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _send_pdf(self, data: bytes, filename: str) -> None:
+        safe_filename = filename.replace('"', "")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/pdf")
+        self.send_header("Content-Disposition", f'attachment; filename="{safe_filename}"')
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)

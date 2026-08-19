@@ -2,7 +2,6 @@ import json
 import os
 import queue
 from datetime import datetime
-from legal_statutes.embeddings import GetCosineSimilarity
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,6 +20,11 @@ class InputManager():
         return False
 
     def check_file_contents(self, filename, query):
+        # Classification is the only feature that needs the Gemini SDK. Keep
+        # that dependency out of application startup so the standalone
+        # petition generator and non-classification pages can run independently.
+        from legal_statutes.embeddings import GetCosineSimilarity
+
         filepath = os.path.join(BASE_DIR, filename) if not os.path.isabs(filename) else filename
         if filepath not in self.files:
             similarity_engine = GetCosineSimilarity()

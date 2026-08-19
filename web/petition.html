@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Petition Generator - Expungement Screening</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/petition.css" />
+  </head>
+  <body>
+    <main class="container petition-container">
+      <header>
+        <h1>Petition Generator</h1>
+        <p class="subtitle">Oklahoma Section 18/19 expungement petition draft</p>
+      </header>
+
+      <div class="progress-bar" aria-label="Screening progress">
+        <div><div class="progress-step completed"></div><div class="step-label completed">Preliminary</div></div>
+        <div><div class="progress-step completed"></div><div class="step-label completed">Cases</div></div>
+        <div><div class="progress-step completed"></div><div class="step-label completed">Details</div></div>
+        <div><div class="progress-step completed"></div><div class="step-label completed">Results</div></div>
+        <div><div class="progress-step active"></div><div class="step-label active">Petition</div></div>
+      </div>
+
+      <div class="review-notice" role="note">
+        <div class="notice-icon" aria-hidden="true">!</div>
+        <div>
+          <strong>Draft for attorney review</strong>
+          <p>This tool formats information you provide; it does not verify legal facts or statutory language. Review the petition, exhibits, service requirements, and current law before filing.</p>
+        </div>
+      </div>
+
+      <div id="error-text" class="error" role="alert"></div>
+
+      <form id="petition-form" novalidate>
+        <section class="card form-section">
+          <div class="section-kicker">Step 1</div>
+          <h2>Filing and petitioner</h2>
+          <p class="section-help">Enter the information that appears in the case caption and the petition's opening allegations.</p>
+
+          <div class="form-grid two-column">
+            <div class="field-group">
+              <label for="court-county">Filing county <span aria-hidden="true">*</span></label>
+              <div class="suffix-field">
+                <input id="court-county" name="court_county" autocomplete="address-level2" required placeholder="Oklahoma" />
+                <span>County</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="civil-case-number">Civil case number</label>
+              <input id="civil-case-number" name="civil_case_number" placeholder="Leave blank if not assigned" />
+            </div>
+            <div class="field-group full-width">
+              <label for="petitioner-name">Petitioner's full legal name <span aria-hidden="true">*</span></label>
+              <input id="petitioner-name" name="petitioner_name" autocomplete="name" required />
+            </div>
+            <div class="field-group">
+              <label for="dob">Date of birth <span aria-hidden="true">*</span></label>
+              <input id="dob" name="dob" type="date" required />
+            </div>
+            <div class="field-group">
+              <label for="representation">Representation <span aria-hidden="true">*</span></label>
+              <select id="representation" name="representation" required>
+                <option value="counsel">Represented by counsel</option>
+                <option value="pro_se">Petitioner appearing pro se</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="card form-section">
+          <div class="section-kicker">Step 2</div>
+          <h2>Signature block</h2>
+          <p class="section-help">This information is placed at the end of the generated petition.</p>
+
+          <div class="form-grid two-column">
+            <div class="field-group">
+              <label for="signer-name">Signer name <span aria-hidden="true">*</span></label>
+              <input id="signer-name" name="signer_name" autocomplete="name" required />
+            </div>
+            <div id="oba-field" class="field-group">
+              <label for="oba-number">OBA number <span aria-hidden="true">*</span></label>
+              <input id="oba-number" name="oba_number" inputmode="numeric" />
+            </div>
+            <div class="field-group full-width">
+              <label for="organization">Law firm or organization</label>
+              <input id="organization" name="organization" autocomplete="organization" />
+            </div>
+            <div class="field-group full-width">
+              <label for="street-address">Mailing address <span aria-hidden="true">*</span></label>
+              <input id="street-address" name="street_address" autocomplete="street-address" required />
+            </div>
+            <div class="field-group full-width">
+              <label for="city-state-zip">City, state, ZIP <span aria-hidden="true">*</span></label>
+              <input id="city-state-zip" name="city_state_zip" autocomplete="address-level2" required placeholder="Oklahoma City, OK 73102" />
+            </div>
+            <div class="field-group">
+              <label for="phone">Telephone <span aria-hidden="true">*</span></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" required />
+            </div>
+            <div class="field-group">
+              <label for="email">Email <span aria-hidden="true">*</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" required />
+            </div>
+          </div>
+        </section>
+
+        <section class="card form-section matters-section">
+          <div class="matters-heading">
+            <div>
+              <div class="section-kicker">Step 3</div>
+              <h2>Cases and arrests</h2>
+              <p class="section-help">Add every matter to include in this petition. Joinder language is added automatically when there is more than one.</p>
+            </div>
+            <button id="add-matter-btn" class="small-btn add-matter-btn" type="button">+ Add matter</button>
+          </div>
+          <div id="screening-import-status" class="screening-import-status hidden" role="status"></div>
+          <div id="matters-list"></div>
+        </section>
+
+        <section class="card form-section review-section">
+          <div class="section-kicker">Step 4</div>
+          <h2>Review and generate</h2>
+          <label class="attestation">
+            <input id="attestation" type="checkbox" required />
+            <span>I understand this creates a draft only, and I will independently verify the facts, statutory category, legal text, required exhibits, and filing/service requirements.</span>
+          </label>
+          <p class="privacy-note">The server generates the PDF in memory and does not save petition form data to disk.</p>
+          <div id="generation-status" class="generation-status" aria-live="polite"></div>
+          <div class="btn-row form-actions">
+            <a class="secondary-btn button-link" href="results.html">Back to results</a>
+            <button id="generate-btn" class="primary-btn accent-btn" type="submit">
+              <span class="button-label">Generate draft PDF</span>
+            </button>
+          </div>
+        </section>
+      </form>
+    </main>
+
+    <template id="matter-template">
+      <article class="matter-card">
+        <div class="matter-toolbar">
+          <div>
+            <span class="matter-number"></span>
+            <h3 class="matter-title">Matter</h3>
+          </div>
+          <button class="remove-matter-btn" type="button" aria-label="Remove matter">Remove</button>
+        </div>
+        <div class="imported-matter-note hidden" data-import-note></div>
+
+        <div class="form-grid two-column compact-grid">
+          <div class="field-group full-width">
+            <label>Petition section <span aria-hidden="true">*</span></label>
+            <select data-field="kind" required>
+              <option value="regular">Filed criminal case</option>
+              <option value="no_file">Arrest - no charges filed</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Case county <span aria-hidden="true">*</span></label>
+            <div class="suffix-field">
+              <input data-field="county" required placeholder="Oklahoma" />
+              <span>County</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Arrest date <span aria-hidden="true">*</span></label>
+            <input data-field="arrest_date" type="date" required />
+          </div>
+          <div class="field-group full-width">
+            <label>Arresting agency <span aria-hidden="true">*</span></label>
+            <input data-field="arresting_agency" required placeholder="City police department, county sheriff, or other agency" />
+          </div>
+          <div class="field-group full-width">
+            <label>Offense(s) <span aria-hidden="true">*</span></label>
+            <textarea data-field="offenses" rows="3" required placeholder="Enter one offense per line"></textarea>
+            <p class="field-hint">Each line is rendered as a separate count or offense.</p>
+          </div>
+          <div class="field-group full-width dated-facts-field">
+            <label>Additional dated facts</label>
+            <div class="dated-facts-list" data-dated-facts-list></div>
+            <button class="add-dated-fact-btn" data-add-dated-fact type="button">+ Add another date and fact</button>
+            <p class="field-hint">Optional. Each complete row becomes a separately numbered allegation: “On or about [date], [information].”</p>
+          </div>
+        </div>
+
+        <div class="conditional-fields" data-section="regular">
+          <div class="conditional-heading">Filed case details</div>
+          <div class="form-grid two-column compact-grid">
+            <div class="field-group">
+              <label>Criminal case number <span aria-hidden="true">*</span></label>
+              <input data-field="criminal_case_number" required placeholder="CF-2024-1234" />
+            </div>
+            <div class="field-group">
+              <label>Court name <span aria-hidden="true">*</span></label>
+              <input data-field="court_name" required placeholder="District Court of Oklahoma County" />
+            </div>
+            <div class="field-group">
+              <label>Case level <span aria-hidden="true">*</span></label>
+              <select data-field="case_level" required>
+                <option value="" selected>Select felony or misdemeanor</option>
+                <option value="felony">Felony</option>
+                <option value="misdemeanor">Misdemeanor</option>
+              </select>
+              <p class="field-hint">Felony matters are placed before misdemeanor matters in the generated petition.</p>
+            </div>
+            <div class="field-group">
+              <label>Record event <span aria-hidden="true">*</span></label>
+              <select data-field="event_type" required>
+                <option value="charged">Charged</option>
+                <option value="arrested">Arrested</option>
+                <option value="cited">Cited</option>
+              </select>
+            </div>
+
+            <div class="field-group full-width">
+              <label>Was the case resolved by any of the circumstances identified during screening? <span aria-hidden="true">*</span></label>
+              <select data-field="resolved" required>
+                <option value="" selected>Select yes or no</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+              <p class="field-hint">This refers to the screening question covering acquittal, reversal or dismissal on appeal, DNA dismissal, pardon, and the other listed special circumstances.</p>
+            </div>
+
+            <div class="field-group full-width hidden" data-resolution-section="pardon-question">
+              <label>Was the case resolved by a full pardon from the Governor? <span aria-hidden="true">*</span></label>
+              <select data-field="government_pardon" disabled required>
+                <option value="" selected>Select yes or no</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+
+            <div class="field-group hidden" data-resolution-section="pardon-details">
+              <label>Pardon date <span aria-hidden="true">*</span></label>
+              <input data-field="pardon_date" type="date" disabled required />
+            </div>
+            <div class="field-group hidden" data-resolution-section="pardon-details">
+              <label>DOC number</label>
+              <input data-field="doc_number" disabled />
+            </div>
+            <div class="field-group hidden" data-resolution-section="pardon-details">
+              <label>Certificate exhibit label <span aria-hidden="true">*</span></label>
+              <input data-field="exhibit_label" disabled required value="A" maxlength="10" />
+            </div>
+
+            <div class="field-group hidden" data-resolution-section="other-special">
+              <label>Resolution date <span aria-hidden="true">*</span></label>
+              <input data-field="disposition_date" type="date" disabled required />
+            </div>
+            <div class="field-group full-width hidden" data-resolution-section="other-special">
+              <label>How was the case resolved? <span aria-hidden="true">*</span></label>
+              <input data-field="disposition" disabled required placeholder="The case was dismissed on appeal" />
+            </div>
+
+            <div class="field-group full-width hidden" data-resolution-section="case-result">
+              <label>What did the case result in? <span aria-hidden="true">*</span></label>
+              <select data-field="case_result" disabled required>
+                <option value="" selected>Select the result</option>
+                <option value="dismissal">Dismissal</option>
+                <option value="conviction">Conviction</option>
+              </select>
+            </div>
+
+            <div class="field-group hidden" data-resolution-section="dismissal">
+              <label>Date dismissed <span aria-hidden="true">*</span></label>
+              <input data-field="dismissal_date" type="date" disabled required />
+            </div>
+            <div class="field-group full-width hidden" data-resolution-section="dismissal">
+              <label>Reason for dismissal <span aria-hidden="true">*</span></label>
+              <input data-field="dismissal_reason" disabled required placeholder="at the State's request" />
+              <p class="field-hint">The petition will state: “On or about [date], the case was dismissed [reason].”</p>
+            </div>
+
+            <div class="field-group hidden" data-resolution-section="conviction">
+              <label>Date convicted <span aria-hidden="true">*</span></label>
+              <input data-field="conviction_date" type="date" disabled required />
+            </div>
+            <div class="field-group hidden" data-resolution-section="conviction">
+              <label>How did the conviction occur? <span aria-hidden="true">*</span></label>
+              <input data-field="conviction_method" disabled required placeholder="pled" />
+            </div>
+            <div class="field-group full-width hidden" data-resolution-section="conviction">
+              <label>Sentence received <span aria-hidden="true">*</span></label>
+              <input data-field="sentence_description" disabled required placeholder="a one year suspended sentence" />
+            </div>
+            <div class="field-group hidden" data-resolution-section="conviction">
+              <label>Date the sentence was completed <span aria-hidden="true">*</span></label>
+              <input data-field="sentence_completion_date" type="date" disabled required />
+              <p class="field-hint">The conviction and sentence-completion facts will be rendered as two separately numbered allegations.</p>
+            </div>
+            <div class="field-group full-width">
+              <label>Additional eligibility facts</label>
+              <textarea data-field="additional_facts" rows="4" placeholder="Enter one complete factual allegation per line"></textarea>
+              <p class="field-hint">Examples: sentence completion date, elapsed waiting period, no later felony conviction, no pending charges, or written no-refile confirmation.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="conditional-fields hidden" data-section="no_file">
+          <div class="conditional-heading">No-file verification</div>
+          <div class="form-grid two-column compact-grid">
+            <div class="field-group">
+              <label>Verification date <span aria-hidden="true">*</span></label>
+              <input data-field="verification_date" type="date" disabled required />
+            </div>
+            <div class="field-group">
+              <label>Verified by <span aria-hidden="true">*</span></label>
+              <input data-field="verified_by" disabled required placeholder="Attorney for Petitioner" />
+            </div>
+            <div class="field-group">
+              <label>Prosecuting agency <span aria-hidden="true">*</span></label>
+              <input data-field="prosecuting_agency" disabled required />
+            </div>
+            <div class="field-group">
+              <label>Court or record-holding agency <span aria-hidden="true">*</span></label>
+              <input data-field="record_agency" disabled required />
+            </div>
+            <div class="field-group full-width">
+              <label>Fact supporting eligibility <span aria-hidden="true">*</span></label>
+              <select data-field="eligibility_basis" disabled required>
+                <option value="" selected>Select the verified basis</option>
+                <option value="The applicable statute of limitations has expired">The applicable statute of limitations has expired</option>
+                <option value="The prosecuting agency has declined to file charges">The prosecuting agency has declined to file charges</option>
+                <option value="">Other - enter below</option>
+              </select>
+              <input class="other-basis hidden" data-field="eligibility_basis_other" disabled placeholder="Enter the complete fact supporting eligibility" />
+            </div>
+          </div>
+        </div>
+
+        <div class="statute-panel">
+          <div class="conditional-heading">Eligibility authority</div>
+          <div class="form-grid two-column compact-grid">
+            <div class="field-group">
+              <label>22 O.S. Section 18(A) category <span aria-hidden="true">*</span></label>
+              <div class="category-field">
+                <span>18(A)(</span>
+                <input data-field="category_number" required inputmode="numeric" maxlength="8" aria-label="Section 18(A) category number" />
+                <span>)</span>
+              </div>
+            </div>
+            <div class="field-group full-width">
+              <label>Current attorney-verified statutory language <span aria-hidden="true">*</span></label>
+              <textarea data-field="statutory_language" rows="6" required placeholder="Paste the exact, current text of the applicable Section 18(A) category"></textarea>
+              <p class="field-hint warning-hint">Required because the generator does not select, quote, or verify statutory text.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="js/common.js"></script>
+    <script src="js/petition.js"></script>
+  </body>
+</html>

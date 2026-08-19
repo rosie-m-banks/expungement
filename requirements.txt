@@ -1,2 +1,3 @@
 numpy
 google-generativeai
+reportlab>=4.0,<5
