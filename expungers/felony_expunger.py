@@ -1,4 +1,3 @@
-from google.api_core.exceptions import DataLoss
 from case_classes.felony import Felony
 from input_manager import InputManager
 from datetime import datetime
@@ -206,5 +205,4 @@ class FelonyExpunger:
         return True, self.felony_results
         ## essentially means that all felony convictions are cleared, so misdo clearing can occur
         
-
 

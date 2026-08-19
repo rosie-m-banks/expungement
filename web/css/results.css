@@ -104,6 +104,17 @@
   white-space: pre-wrap;
 }
 
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.petition-btn {
+  padding: 9px 18px;
+  font-size: 13px;
+}
+
 ul.case-details {
   padding-left: 28px;
   list-style: none;
