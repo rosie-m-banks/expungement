@@ -530,6 +530,12 @@
 
   const STATE_KEY = 'engine_state';
 
+  /* Invariant: state.cases.* always holds live Arrest/Felony/Misdemeanor
+   * instances with real Date fields. saveState is the only place that
+   * serializes and loadState is the only place that revives, so neither
+   * conversion may be applied twice — dateToMs turns an already-serialized
+   * millisecond value into null, which silently erases the date. */
+
   function dateToMs(d) { return d instanceof Date ? d.getTime() : null; }
   function msToDate(ms) { return ms !== null && ms !== undefined ? new Date(ms) : null; }
 
@@ -714,24 +720,24 @@
     if (caseType === 0) {
       const [case_name, arresting_agency, arrest_date, addl_arrests, court, resolved,
         convic_dismiss_defer_drug, treatment, sentencing_date, fines_paid, expir_no_risk, counts] = answers;
-      state.cases.felonies.push(serializeFelony(new Felony({
+      state.cases.felonies.push(new Felony({
         case_name, arresting_agency, arrest_date, addl_arrests, court, resolved,
         convic_dismiss_defer_drug, counts, sentencing_date, fines_paid, expir_no_risk, treatment,
-      })));
+      }));
     } else if (caseType === 1) {
       const [case_name, arresting_agency, arrest_date, addl_arrests, court, resolved,
         convic_dismiss_defer_drug, treatment, sentencing_date, fines_paid, expir_no_risk,
         fine_amount, imprisoned] = answers;
-      state.cases.misdos.push(serializeMisdo(new Misdemeanor({
+      state.cases.misdos.push(new Misdemeanor({
         case_name, arresting_agency, arrest_date, addl_arrests, court, resolved,
         convic_dismiss_defer_drug, treatment, sentencing_date, fines_paid, expir_no_risk,
         fine_amount, imprisoned,
-      })));
+      }));
     } else {
       const [case_name, arresting_agency, arrest_date, expir_no_risk] = answers;
-      state.cases.arrests.push(serializeArrest(new Arrest({
+      state.cases.arrests.push(new Arrest({
         case_name, arresting_agency, arrest_date, expir_no_risk, resolved: true,
-      })));
+      }));
     }
 
     state.currentCaseIndex++;
@@ -757,9 +763,9 @@
     const state = loadState();
     if (!state) return [];
 
-    const felonies = (state.cases.felonies || []).map(reviveFelony);
-    const misdos   = (state.cases.misdos   || []).map(reviveMisdo);
-    const arrests  = (state.cases.arrests  || []).map(reviveArrest);
+    const felonies = state.cases.felonies || [];
+    const misdos   = state.cases.misdos   || [];
+    const arrests  = state.cases.arrests  || [];
     const earlyExitMessages = state.earlyExitMessages || [];
 
     if (felonies.length === 0 && misdos.length === 0 && arrests.length === 0) {
