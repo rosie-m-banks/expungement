@@ -312,6 +312,49 @@ function showImportStatus(message, tone = "success") {
   screeningImportStatus.dataset.tone = tone;
 }
 
+function populateImportedMatters(data, sourceLabel) {
+  mattersList.innerHTML = "";
+  data.cases.forEach((matter) => createMatter(matter));
+  const firstCounty = data.cases.find((matter) => matter.county)?.county;
+  const filingCounty = document.getElementById("court-county");
+  if (firstCounty && !filingCounty.value.trim()) filingCounty.value = firstCounty;
+
+  const noun = data.eligible_count === 1 ? "matter" : "matters";
+  showImportStatus(
+    `Imported ${data.eligible_count} eligible ${noun} from ${sourceLabel}. ` +
+      "Review the imported values and complete the amber petition-only fields.",
+    "success"
+  );
+  return true;
+}
+
+async function importEngineStateMatters() {
+  const prefill = window.petitionPrefill;
+  const state = prefill?.readCompletedEngineState(sessionStorage);
+  if (!state || typeof window.engine?.analyze !== "function") return false;
+
+  showImportStatus("Importing eligible cases and arrests from browser screening...", "loading");
+  try {
+    const results = await window.engine.analyze();
+    const data = prefill.buildPetitionPrefill(state, results);
+    if (!Array.isArray(data.cases) || data.cases.length === 0) {
+      showImportStatus(
+        "No eligible browser-screening matters were available to import. You can add a matter manually.",
+        "warning"
+      );
+      return false;
+    }
+    sessionStorage.removeItem("petition_prefill");
+    return populateImportedMatters(data, "the completed browser screening");
+  } catch (_error) {
+    showImportStatus(
+      "The browser screening could not be imported. You can continue with the available prefill or add matters manually.",
+      "warning"
+    );
+    return false;
+  }
+}
+
 async function importScreeningMatters() {
   const sessionId = getSessionId();
   if (!sessionId) return false;
@@ -333,20 +376,7 @@ async function importScreeningMatters() {
       );
       return false;
     }
-
-    mattersList.innerHTML = "";
-    data.cases.forEach((matter) => createMatter(matter));
-    const firstCounty = data.cases.find((matter) => matter.county)?.county;
-    const filingCounty = document.getElementById("court-county");
-    if (firstCounty && !filingCounty.value.trim()) filingCounty.value = firstCounty;
-
-    const noun = data.eligible_count === 1 ? "matter" : "matters";
-    showImportStatus(
-      `Imported ${data.eligible_count} eligible ${noun} from the completed screening. ` +
-        "Review the imported values and complete the amber petition-only fields.",
-      "success"
-    );
-    return true;
+    return populateImportedMatters(data, "the completed screening");
   } catch (_error) {
     showImportStatus(
       "The completed screening could not be imported. You can continue with the available prefill or add matters manually.",
@@ -535,7 +565,6 @@ async function submitPetition(event) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const legacyPrefill = prefillFromResults();
   updateRepresentation();
 
   addMatterButton.addEventListener("click", () => createMatter());
@@ -553,6 +582,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   petitionForm.addEventListener("submit", submitPetition);
 
-  const imported = await importScreeningMatters();
-  if (!imported) createMatter(legacyPrefill || {});
+  const browserImported = await importEngineStateMatters();
+  const serverImported = browserImported ? false : await importScreeningMatters();
+  if (!browserImported && !serverImported) createMatter(prefillFromResults() || {});
 });

@@ -344,14 +344,16 @@
             <div class="field-group full-width">
               <label>Current attorney-verified statutory language <span aria-hidden="true">*</span></label>
               <textarea data-field="statutory_language" rows="6" required placeholder="Paste the exact, current text of the applicable Section 18(A) category"></textarea>
-              <p class="field-hint warning-hint">Required because the generator does not select, quote, or verify statutory text.</p>
+              <p class="field-hint warning-hint">Prefilled when the screening result matches a configured category. Always verify the category and current statutory text before filing.</p>
             </div>
           </div>
         </div>
       </article>
     </template>
 
+    <script src="js/engine.js"></script>
     <script src="js/common.js"></script>
+    <script src="js/petition_prefill.js"></script>
     <script src="js/petition.js"></script>
   </body>
 </html>
