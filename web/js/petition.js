@@ -458,6 +458,37 @@ function showValidationErrors() {
   return true;
 }
 
+/* A Response body is a one-shot stream, and reading it as JSON consumes it
+ * even when the parse fails. So read it once as text and parse that, rather
+ * than calling .json() and then .text() on the same response. */
+async function errorMessageFromResponse(response, fallback) {
+  let body = "";
+  try {
+    body = await response.text();
+  } catch (_error) {
+    return fallback;
+  }
+
+  try {
+    const data = JSON.parse(body);
+    const fromJson = data.errors?.join(" ") || data.error;
+    if (fromJson) return fromJson;
+  } catch (_error) {
+    /* Not JSON. Fall through to the plain-text handling below. */
+  }
+
+  /* A static copy of the site has no /api route and answers with the host's
+   * own HTML 404 page. Showing that markup to an attorney is worse than
+   * useless, so say what actually went wrong. */
+  if (response.status === 404 || /<\s*(!doctype|html)/i.test(body)) {
+    return "The petition generator needs the screening server, which this page cannot reach.";
+  }
+
+  const text = body.trim();
+  if (text && text.length <= 160 && !text.includes("<")) return text;
+  return `${fallback} The server returned status ${response.status}.`;
+}
+
 function filenameFromResponse(response) {
   const disposition = response.headers.get("Content-Disposition") || "";
   const match = disposition.match(/filename="?([^";]+)"?/i);
@@ -479,14 +510,9 @@ async function submitPetition(event) {
       body: JSON.stringify(collectPayload()),
     });
     if (!response.ok) {
-      let message = "Unable to generate the petition.";
-      try {
-        const data = await response.json();
-        message = data.errors?.join(" ") || data.error || message;
-      } catch (_error) {
-        message = await response.text() || message;
-      }
-      throw new Error(message);
+      throw new Error(
+        await errorMessageFromResponse(response, "Unable to generate the petition.")
+      );
     }
 
     const blob = await response.blob();
