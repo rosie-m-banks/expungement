@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import posixpath
 import threading
 import time
 import uuid
@@ -55,6 +56,11 @@ def classify_count(input_manager: InputManager, count: str) -> str:
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(BASE_DIR, "web")
+
+# The browser runs the screening itself and fetches these two directories
+# directly. The GitHub Pages build copies them into web/ before publishing;
+# when this process serves the site they stay where they are in the repository.
+SHARED_ASSET_DIRS = frozenset({"questions", "legal_statutes"})
 
 
 # ---------------------------------------------------------------------------
@@ -270,10 +276,35 @@ class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
+    def translate_path(self, path: str) -> str:
+        """Serve web/, plus the shared question and statute directories.
+
+        Normalising the URL first is what makes this safe: a traversal
+        attempt such as /questions/../web_server.py collapses to
+        /web_server.py, whose leading segment is no longer a shared asset
+        directory, so it falls through and is resolved under web/ instead.
+        """
+        url_path = posixpath.normpath(urlparse(path).path)
+        if url_path.lstrip("/").split("/", 1)[0] in SHARED_ASSET_DIRS:
+            original = self.directory
+            try:
+                self.directory = BASE_DIR
+                return super().translate_path(url_path)
+            finally:
+                self.directory = original
+        return super().translate_path(path)
+
     def end_headers(self) -> None:
-        """Disable caching for all static files during development."""
-        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
-        self.send_header("Pragma", "no-cache")
+        """Keep API answers uncached, but let static files revalidate.
+
+        The statute embeddings are several megabytes, so re-sending them on
+        every screening is wasteful. The base handler already sends
+        Last-Modified and answers If-Modified-Since with 304, which keeps the
+        browser from using a stale file without re-downloading a fresh one.
+        """
+        if urlparse(self.path).path.startswith("/api/"):
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+            self.send_header("Pragma", "no-cache")
         super().end_headers()
 
     # -- routing ---------------------------------------------------------

@@ -1,0 +1,5 @@
+# Test-only dependencies. The runtime image installs requirements.txt alone.
+-r requirements.txt
+
+pytest
+pypdf
