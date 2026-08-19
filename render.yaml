@@ -1,0 +1,20 @@
+# Render Blueprint. Connect this repository as a Blueprint and Render builds
+# the existing Dockerfile; no card is needed for the free instance type.
+#
+# Render injects PORT, which web_server.py main() already reads, and the
+# server binds 0.0.0.0 by default, so no environment variables are required.
+#
+# Free instances spin down after about 15 minutes of inactivity and cold start
+# on the next request, so the first page load after an idle period is slow.
+services:
+  - name: expungement
+    type: web
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # The landing page is a static file, so this is a cheap liveness probe.
+    healthCheckPath: /
+    autoDeployTrigger: commit

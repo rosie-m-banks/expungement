@@ -5,3 +5,15 @@ __pycache__/
 .env
 README.md
 
+# Local Claude Code state. .claude/worktrees/ holds whole checkouts of this
+# repository, which would otherwise be copied into the build context.
+.claude/
+
+# Test-only files and dependencies are not needed in the runtime image.
+tests/
+requirements-dev.txt
+
+# Never let local credentials reach an image.
+secrets
+*.pem
+*.key
