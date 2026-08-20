@@ -236,6 +236,7 @@ function countSentenceData(row) {
 function appendCountSentenceField(grid, labelText, field, options = {}) {
   const group = document.createElement("div");
   group.className = `field-group${options.fullWidth ? " full-width" : ""}`;
+  group.dataset.sentenceFieldGroup = field;
 
   const label = document.createElement("label");
   label.textContent = labelText;
@@ -293,6 +294,7 @@ function addCountSentenceRow(card, sentence = {}, index = 0, offense = "") {
   Object.entries(fields).forEach(([field, input]) => {
     input.value = sentence[field] || "";
   });
+  fields.conviction_date.addEventListener("input", () => syncSharedConvictionDates(card));
 
   row.append(heading, grid);
   list.appendChild(row);
@@ -337,12 +339,30 @@ function initializeCountSentences(card, prefill) {
   const preferred = provided.length ? provided : [legacy];
   syncCountSentenceRows(card, preferred);
 
+  const sharedDate = card.querySelector("[data-shared-conviction-date]");
+  sharedDate.checked = Boolean(prefill.shared_conviction_date);
+  sharedDate.addEventListener("change", () => {
+    syncSharedConvictionDates(card);
+    updateCountSentenceMode(card);
+    renumberMatters();
+  });
+
   card.querySelector("[data-apply-sentence-all]").addEventListener("change", () => {
     updateCountSentenceMode(card);
     renumberMatters();
   });
   card.querySelector('[data-field="offenses"]').addEventListener("change", () => {
     syncCountSentenceRows(card);
+  });
+}
+
+function syncSharedConvictionDates(card) {
+  const sharedDate = card.querySelector("[data-shared-conviction-date]");
+  if (!sharedDate?.checked) return;
+  const dateInputs = [...card.querySelectorAll('[data-sentence-field="conviction_date"]')];
+  const firstDate = dateInputs[0]?.value || "";
+  dateInputs.slice(1).forEach((input) => {
+    input.value = firstDate;
   });
 }
 
@@ -355,12 +375,18 @@ function updateCountSentenceMode(card) {
   const offenses = offenseList(card);
   const multipleCounts = offenses.length > 1;
   const applyAll = wrapper.querySelector("[data-apply-sentence-all]");
-  const toggle = wrapper.querySelector("[data-same-sentence-toggle]");
+  const sentenceToggle = wrapper.querySelector("[data-same-sentence-toggle]");
+  const sharedDate = wrapper.querySelector("[data-shared-conviction-date]");
+  const dateToggle = wrapper.querySelector("[data-same-date-toggle]");
   const active = !wrapper.classList.contains("hidden");
   const shared = multipleCounts && applyAll.checked;
+  const usesSharedDate = multipleCounts && !shared && sharedDate.checked;
 
-  toggle.classList.toggle("hidden", !multipleCounts);
+  sentenceToggle.classList.toggle("hidden", !multipleCounts);
+  dateToggle.classList.toggle("hidden", !multipleCounts || shared);
   applyAll.disabled = !active || !multipleCounts;
+  sharedDate.disabled = !active || !multipleCounts || shared;
+  if (usesSharedDate) syncSharedConvictionDates(card);
   rows.forEach((row, index) => {
     const hidden = shared && index > 0;
     row.classList.toggle("hidden", hidden);
@@ -370,20 +396,40 @@ function updateCountSentenceMode(card) {
     row.querySelectorAll("input").forEach((input) => {
       input.disabled = !active || hidden;
     });
+    const convictionDateGroup = row.querySelector(
+      '[data-sentence-field-group="conviction_date"]'
+    );
+    const inheritedDate = usesSharedDate && index > 0;
+    convictionDateGroup.classList.toggle("hidden", inheritedDate);
+    if (inheritedDate) {
+      convictionDateGroup.querySelector("input").disabled = true;
+    }
   });
+}
+
+function usesSharedConvictionDate(card) {
+  return offenseList(card).length > 1
+    && !card.querySelector("[data-apply-sentence-all]").checked
+    && card.querySelector("[data-shared-conviction-date]").checked;
 }
 
 function collectCountSentences(card) {
   const offenses = offenseList(card);
   const rows = [...card.querySelectorAll("[data-count-sentence-row]")];
   const applyAll = offenses.length > 1 && card.querySelector("[data-apply-sentence-all]").checked;
+  const sharedDate = usesSharedConvictionDate(card);
+  const sharedConvictionDate = countSentenceValue(rows[0], "conviction_date");
   return (applyAll ? rows.slice(0, 1) : rows.slice(0, Math.max(offenses.length, 1)))
-    .map((row, index) => ({
-      ...countSentenceData(row),
-      applies_to_all: applyAll,
-      count_number: applyAll ? null : index + 1,
-      offense: applyAll ? "" : (offenses[index] || `Count ${index + 1}`),
-    }));
+    .map((row, index) => {
+      const sentence = countSentenceData(row);
+      return {
+        ...sentence,
+        conviction_date: sharedDate ? sharedConvictionDate : sentence.conviction_date,
+        applies_to_all: applyAll,
+        count_number: applyAll ? null : index + 1,
+        offense: applyAll ? "" : (offenses[index] || `Count ${index + 1}`),
+      };
+    });
 }
 
 function createMatter(prefill = {}) {
@@ -634,6 +680,7 @@ function collectPayload() {
             item.dismissal_reason = fieldValue(card, "dismissal_reason");
           } else if (caseResult === "conviction") {
             item.count_sentences = collectCountSentences(card);
+            item.shared_conviction_date = usesSharedConvictionDate(card);
           }
         } else {
           item.disposition_type = "other";

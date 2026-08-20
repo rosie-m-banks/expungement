@@ -337,6 +337,22 @@ def validate_petition_payload(payload: Any) -> dict[str, Any]:
                         prefix,
                         errors,
                     )
+                    shared_conviction_date = raw_case.get("shared_conviction_date") is True
+                    if shared_conviction_date:
+                        if len(count_sentences) < 2 or any(
+                            sentence["applies_to_all"] for sentence in count_sentences
+                        ):
+                            errors.append(
+                                f"{prefix} shared conviction date requires separate sentences "
+                                "for multiple counts."
+                            )
+                        elif len({
+                            sentence["conviction_date"] for sentence in count_sentences
+                        }) != 1:
+                            errors.append(
+                                f"{prefix} count conviction dates must match when the shared-date "
+                                "option is selected."
+                            )
                     first_sentence = count_sentences[0] if count_sentences else {}
                     method = first_sentence.get("conviction_method", "")
                     sentence = first_sentence.get("sentence_description", "")
@@ -344,6 +360,7 @@ def validate_petition_payload(payload: Any) -> dict[str, Any]:
                     completion_date = first_sentence.get("sentence_completion_date", "")
                     case.update({
                         "count_sentences": count_sentences,
+                        "shared_conviction_date": shared_conviction_date,
                         "disposition_date": conviction_date,
                         "disposition": f"Petitioner {method} and received {sentence}".strip(),
                         "conviction_method": method,
@@ -365,6 +382,7 @@ def validate_petition_payload(payload: Any) -> dict[str, Any]:
                     )
                     case.update({
                         "count_sentences": [],
+                        "shared_conviction_date": False,
                         "disposition_date": conviction_date,
                         "disposition": f"Petitioner {method} and received {sentence}".strip(),
                         "conviction_method": method,
@@ -445,6 +463,31 @@ def _plain_join(values: list[str]) -> str:
     if len(values) == 2:
         return f"{values[0]} and {values[1]}"
     return ", ".join(values[:-1]) + f", and {values[-1]}"
+
+
+COUNT_NAMES = (
+    "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+    "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
+    "Eighteen", "Nineteen", "Twenty", "Twenty-One", "Twenty-Two", "Twenty-Three",
+    "Twenty-Four", "Twenty-Five", "Twenty-Six", "Twenty-Seven", "Twenty-Eight",
+    "Twenty-Nine", "Thirty",
+)
+
+
+def _count_label(number: int) -> str:
+    name = COUNT_NAMES[number - 1] if 1 <= number <= len(COUNT_NAMES) else str(number)
+    return f"Count {name}"
+
+
+def _roman(number: int) -> str:
+    values = ((10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i"))
+    output = ""
+    remaining = number
+    for value, numeral in values:
+        while remaining >= value:
+            output += numeral
+            remaining -= value
+    return output
 
 
 def _draw_page(canvas, doc) -> None:
@@ -604,6 +647,21 @@ def generate_petition_pdf(payload: Any) -> tuple[bytes, dict[str, Any]]:
         story.append(row)
         paragraph_number += 1
 
+    def count_subpoint(index: int, content: str) -> None:
+        row = Table(
+            [["", Paragraph(f"{_roman(index)}.", body), Paragraph(content, body)]],
+            colWidths=[0.55 * inch, 0.42 * inch, 5.53 * inch],
+            hAlign="LEFT",
+        )
+        row.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ]))
+        story.append(row)
+
     def add_additional_dated_facts(case: dict[str, Any]) -> None:
         for fact in case["additional_dated_facts"]:
             allegation(
@@ -671,32 +729,54 @@ def generate_petition_pdf(payload: Any) -> tuple[bytes, dict[str, Any]]:
             elif case["disposition_type"] == "conviction":
                 if case.get("count_sentences"):
                     multiple_counts = len(case["offenses"]) > 1
-                    for count_sentence in case["count_sentences"]:
-                        if count_sentence["applies_to_all"] and multiple_counts:
-                            conviction_scope = " as to all counts"
-                            completion_scope = " for all counts"
-                            received_join = " and"
-                        elif multiple_counts:
-                            count_label = (
-                                f"Count {count_sentence['count_number']}, "
+                    if case.get("shared_conviction_date"):
+                        allegation(
+                            f"On or about {_markup(case['count_sentences'][0]['conviction_date'])}, "
+                            "Petitioner was convicted and sentenced as follows:"
+                        )
+                        for count_index, count_sentence in enumerate(case["count_sentences"], start=1):
+                            count_subpoint(
+                                count_index,
+                                f"<b>{_count_label(count_sentence['count_number'])}:</b> Petitioner "
+                                f"{_markup(count_sentence['conviction_method'])} and received "
+                                f"{_markup(count_sentence['sentence_description'])}."
+                            )
+                        for count_sentence in case["count_sentences"]:
+                            completion_scope = (
+                                f" for {_count_label(count_sentence['count_number'])}, "
                                 f"{_markup(count_sentence['offense'])}"
                             )
-                            conviction_scope = f" as to {count_label}"
-                            completion_scope = f" for {count_label}"
-                            received_join = ", and"
-                        else:
-                            conviction_scope = ""
-                            completion_scope = ""
-                            received_join = " and"
-                        allegation(
-                            f"On or about {_markup(count_sentence['conviction_date'])}, Petitioner "
-                            f"{_markup(count_sentence['conviction_method'])}{conviction_scope}"
-                            f"{received_join} received {_markup(count_sentence['sentence_description'])}."
-                        )
-                        allegation(
-                            f"On or about {_markup(count_sentence['sentence_completion_date'])}, "
-                            f"Petitioner completed the sentence{completion_scope}."
-                        )
+                            allegation(
+                                f"On or about {_markup(count_sentence['sentence_completion_date'])}, "
+                                f"Petitioner completed the sentence{completion_scope}."
+                            )
+                    else:
+                        for count_sentence in case["count_sentences"]:
+                            if count_sentence["applies_to_all"] and multiple_counts:
+                                conviction_scope = " as to all counts"
+                                completion_scope = " for all counts"
+                                received_join = " and"
+                            elif multiple_counts:
+                                count_label = (
+                                    f"Count {count_sentence['count_number']}, "
+                                    f"{_markup(count_sentence['offense'])}"
+                                )
+                                conviction_scope = f" as to {count_label}"
+                                completion_scope = f" for {count_label}"
+                                received_join = ", and"
+                            else:
+                                conviction_scope = ""
+                                completion_scope = ""
+                                received_join = " and"
+                            allegation(
+                                f"On or about {_markup(count_sentence['conviction_date'])}, Petitioner "
+                                f"{_markup(count_sentence['conviction_method'])}{conviction_scope}"
+                                f"{received_join} received {_markup(count_sentence['sentence_description'])}."
+                            )
+                            allegation(
+                                f"On or about {_markup(count_sentence['sentence_completion_date'])}, "
+                                f"Petitioner completed the sentence{completion_scope}."
+                            )
                 else:
                     allegation(
                         f"On or about {_markup(case['disposition_date'])}, Petitioner "

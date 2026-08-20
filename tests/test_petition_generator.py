@@ -249,6 +249,83 @@ class PetitionGeneratorTests(unittest.TestCase):
             text,
         )
 
+    def test_shared_conviction_date_groups_counts_as_subpoints(self):
+        payload = complete_payload()
+        matter = payload["cases"][0]
+        matter.pop("disposition_date")
+        matter.pop("disposition")
+        matter.update({
+            "disposition_type": "conviction",
+            "shared_conviction_date": True,
+            "count_sentences": [
+                {
+                    "count_number": 1,
+                    "applies_to_all": False,
+                    "conviction_date": "2014-12-30",
+                    "conviction_method": "pled guilty",
+                    "sentence_description": "a three-year deferred sentence plus costs and fines",
+                    "sentence_completion_date": "2017-12-18",
+                },
+                {
+                    "count_number": 2,
+                    "applies_to_all": False,
+                    "conviction_date": "2014-12-30",
+                    "conviction_method": "pled no contest",
+                    "sentence_description": "a one-year suspended sentence",
+                    "sentence_completion_date": "2015-12-30",
+                },
+            ],
+        })
+        payload["cases"] = [matter]
+
+        pdf_bytes, normalized = generate_petition_pdf(payload)
+        text = " ".join(
+            re.sub(r"\s+", " ", page.extract_text() or "").strip()
+            for page in PdfReader(io.BytesIO(pdf_bytes)).pages
+        )
+
+        self.assertTrue(normalized["cases"][0]["shared_conviction_date"])
+        self.assertEqual(text.count("On or about 12/30/2014"), 1)
+        self.assertIn(
+            "On or about 12/30/2014, Petitioner was convicted and sentenced as follows:",
+            text,
+        )
+        self.assertIn(
+            "i. Count One: Petitioner pled guilty and received a three-year deferred sentence "
+            "plus costs and fines.",
+            text,
+        )
+        self.assertIn(
+            "ii. Count Two: Petitioner pled no contest and received a one-year suspended sentence.",
+            text,
+        )
+
+    def test_shared_conviction_date_requires_matching_dates(self):
+        payload = complete_payload()
+        matter = payload["cases"][0]
+        matter.pop("disposition_date")
+        matter.pop("disposition")
+        matter.update({
+            "disposition_type": "conviction",
+            "shared_conviction_date": True,
+            "count_sentences": [
+                {
+                    "count_number": count_number,
+                    "applies_to_all": False,
+                    "conviction_date": conviction_date,
+                    "conviction_method": "pled",
+                    "sentence_description": "a one year suspended sentence",
+                    "sentence_completion_date": "2004-01-02",
+                }
+                for count_number, conviction_date in ((1, "2003-01-02"), (2, "2003-01-03"))
+            ],
+        })
+        payload["cases"] = [matter]
+
+        with self.assertRaises(PetitionValidationError) as context:
+            generate_petition_pdf(payload)
+        self.assertIn("count conviction dates must match", str(context.exception))
+
     def test_count_sentences_must_cover_each_count_once(self):
         payload = complete_payload()
         matter = payload["cases"][0]

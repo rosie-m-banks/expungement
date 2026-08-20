@@ -29,6 +29,8 @@ are prefilled; unmapped authorities remain blank. The user must verify every
 category and the current statutory text before generating or filing a petition.
 For conviction matters, the petition form creates a sentence section for each
 count. Separate conviction and completion allegations are generated per count,
-or the user can mark that one sentence applies to all counts.
+or the user can mark that one sentence applies to all counts. When separate
+count sentences share a conviction date, the generator can state the date once
+and list each count beneath it as a Roman-numeral subpoint.
 
 Alternatively, check out the web hosted version here: https://expungement.replit.app/

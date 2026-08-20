@@ -402,7 +402,13 @@
   font-weight: 700;
 }
 
-.same-sentence-toggle {
+.count-sentence-options {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.count-sentence-toggle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -412,7 +418,7 @@
   cursor: pointer;
 }
 
-.same-sentence-toggle input {
+.count-sentence-toggle input {
   width: 17px;
   height: 17px;
   flex: 0 0 auto;

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Petition Generator - Expungement Screening</title>
     <link rel="stylesheet" href="css/common.css" />
-    <link rel="stylesheet" href="css/petition.css?v=20260819-count-sentences" />
+    <link rel="stylesheet" href="css/petition.css?v=20260819-shared-date" />
   </head>
   <body>
     <main class="container petition-container">
@@ -279,10 +279,16 @@
                   <div class="sentence-section-title">Sentence for each count</div>
                   <p class="field-hint">Each count produces its own conviction and sentence-completion allegations.</p>
                 </div>
-                <label class="same-sentence-toggle hidden" data-same-sentence-toggle>
-                  <input type="checkbox" data-apply-sentence-all disabled />
-                  <span>All counts received the same sentence</span>
-                </label>
+                <div class="count-sentence-options">
+                  <label class="count-sentence-toggle hidden" data-same-date-toggle>
+                    <input type="checkbox" data-shared-conviction-date disabled />
+                    <span>All counts have the same conviction date</span>
+                  </label>
+                  <label class="count-sentence-toggle hidden" data-same-sentence-toggle>
+                    <input type="checkbox" data-apply-sentence-all disabled />
+                    <span>All counts received the same sentence</span>
+                  </label>
+                </div>
               </div>
               <div class="count-sentences-list" data-count-sentences-list></div>
             </div>
@@ -349,7 +355,7 @@
 
     <script src="js/engine.js"></script>
     <script src="js/common.js"></script>
-    <script src="js/petition_prefill.js?v=20260819-count-sentences"></script>
-    <script src="js/petition.js?v=20260819-count-sentences"></script>
+    <script src="js/petition_prefill.js?v=20260819-shared-date"></script>
+    <script src="js/petition.js?v=20260819-shared-date"></script>
   </body>
 </html>
