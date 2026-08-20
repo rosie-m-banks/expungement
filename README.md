@@ -27,5 +27,8 @@ The generated PDF is a draft for attorney review. When a screening verdict
 matches a configured 22 O.S. Section 18(A) authority, the category and language
 are prefilled; unmapped authorities remain blank. The user must verify every
 category and the current statutory text before generating or filing a petition.
+For conviction matters, the petition form creates a sentence section for each
+count. Separate conviction and completion allegations are generated per count,
+or the user can mark that one sentence applies to all counts.
 
 Alternatively, check out the web hosted version here: https://expungement.replit.app/

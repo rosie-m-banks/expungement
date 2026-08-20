@@ -35,7 +35,13 @@ function assignDynamicLabels(card, index) {
     const control = group.querySelector("input, select, textarea");
     const label = group.querySelector("label");
     if (!control || !label) return;
-    const id = `matter-${index}-${control.dataset.field || groupIndex}`;
+    const sentenceRow = group.closest("[data-count-sentence-row]");
+    const sentenceIndex = sentenceRow
+      ? [...card.querySelectorAll("[data-count-sentence-row]")].indexOf(sentenceRow) + 1
+      : 0;
+    const id = sentenceRow
+      ? `matter-${index}-count-${sentenceIndex}-${control.dataset.sentenceField}`
+      : `matter-${index}-${control.dataset.field || groupIndex}`;
     control.id = id;
     label.htmlFor = id;
   });
@@ -90,6 +96,7 @@ function updateResolutionFields(card) {
     "conviction",
     regularActive && resolved === "no" && caseResult === "conviction"
   );
+  updateCountSentenceMode(card);
 
   card.querySelector(".matter-title").textContent =
     regularActive && resolved === "yes" && governmentPardon === "yes"
@@ -205,6 +212,180 @@ function collectDatedFacts(card) {
     .filter((fact) => fact.date && fact.info);
 }
 
+function offenseList(card) {
+  const control = card.querySelector('[data-field="offenses"]');
+  return String(control?.value || "")
+    .split(/\r?\n/)
+    .map((offense) => offense.trim())
+    .filter(Boolean);
+}
+
+function countSentenceValue(row, field) {
+  return row.querySelector(`[data-sentence-field="${field}"]`)?.value.trim() || "";
+}
+
+function countSentenceData(row) {
+  return {
+    conviction_date: countSentenceValue(row, "conviction_date"),
+    conviction_method: countSentenceValue(row, "conviction_method"),
+    sentence_description: countSentenceValue(row, "sentence_description"),
+    sentence_completion_date: countSentenceValue(row, "sentence_completion_date"),
+  };
+}
+
+function appendCountSentenceField(grid, labelText, field, options = {}) {
+  const group = document.createElement("div");
+  group.className = `field-group${options.fullWidth ? " full-width" : ""}`;
+
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  const required = document.createElement("span");
+  required.setAttribute("aria-hidden", "true");
+  required.textContent = " *";
+  label.appendChild(required);
+
+  const input = document.createElement("input");
+  input.dataset.sentenceField = field;
+  input.type = options.type || "text";
+  input.placeholder = options.placeholder || "";
+  input.required = true;
+  input.disabled = true;
+
+  group.append(label, input);
+  grid.appendChild(group);
+  return input;
+}
+
+function addCountSentenceRow(card, sentence = {}, index = 0, offense = "") {
+  const list = card.querySelector("[data-count-sentences-list]");
+  const row = document.createElement("div");
+  row.className = "count-sentence-row";
+  row.dataset.countSentenceRow = "";
+
+  const heading = document.createElement("div");
+  heading.className = "count-sentence-title";
+  heading.dataset.countSentenceTitle = "";
+  heading.textContent = `Count ${index + 1}${offense ? ` — ${offense}` : ""}`;
+
+  const grid = document.createElement("div");
+  grid.className = "form-grid two-column count-sentence-grid";
+  const fields = {
+    conviction_date: appendCountSentenceField(grid, "Date convicted", "conviction_date", { type: "date" }),
+    conviction_method: appendCountSentenceField(
+      grid,
+      "How did the conviction occur?",
+      "conviction_method",
+      { placeholder: "pled" }
+    ),
+    sentence_description: appendCountSentenceField(
+      grid,
+      "Sentence received",
+      "sentence_description",
+      { placeholder: "a one year suspended sentence", fullWidth: true }
+    ),
+    sentence_completion_date: appendCountSentenceField(
+      grid,
+      "Date the sentence was completed",
+      "sentence_completion_date",
+      { type: "date" }
+    ),
+  };
+  Object.entries(fields).forEach(([field, input]) => {
+    input.value = sentence[field] || "";
+  });
+
+  row.append(heading, grid);
+  list.appendChild(row);
+  return row;
+}
+
+function syncCountSentenceRows(card, preferredSentences) {
+  const list = card.querySelector("[data-count-sentences-list]");
+  if (!list) return;
+  const offenses = offenseList(card);
+  const targetCount = Math.max(offenses.length, 1);
+  const previousRows = [...list.querySelectorAll("[data-count-sentence-row]")];
+  const existing = preferredSentences || previousRows.map((row) => countSentenceData(row));
+  const sharedSource = existing.length === 1 && existing[0]?.applies_to_all;
+
+  list.innerHTML = "";
+  for (let index = 0; index < targetCount; index += 1) {
+    const sentence = existing[index] || (sharedSource ? existing[0] : {});
+    addCountSentenceRow(card, sentence, index, offenses[index] || "");
+  }
+
+  const applyAll = card.querySelector("[data-apply-sentence-all]");
+  if (preferredSentences) {
+    applyAll.checked = targetCount === 1 || Boolean(preferredSentences[0]?.applies_to_all);
+  } else if (targetCount === 1) {
+    applyAll.checked = true;
+  } else if (previousRows.length === 1) {
+    applyAll.checked = false;
+  }
+  updateCountSentenceMode(card);
+  renumberMatters();
+}
+
+function initializeCountSentences(card, prefill) {
+  const provided = Array.isArray(prefill.count_sentences) ? prefill.count_sentences : [];
+  const legacy = {
+    conviction_date: prefill.conviction_date || "",
+    conviction_method: prefill.conviction_method || "",
+    sentence_description: prefill.sentence_description || "",
+    sentence_completion_date: prefill.sentence_completion_date || "",
+  };
+  const preferred = provided.length ? provided : [legacy];
+  syncCountSentenceRows(card, preferred);
+
+  card.querySelector("[data-apply-sentence-all]").addEventListener("change", () => {
+    updateCountSentenceMode(card);
+    renumberMatters();
+  });
+  card.querySelector('[data-field="offenses"]').addEventListener("change", () => {
+    syncCountSentenceRows(card);
+  });
+}
+
+function updateCountSentenceMode(card) {
+  const wrapper = card.querySelector("[data-count-sentences-list]")?.closest(
+    '[data-resolution-section="conviction"]'
+  );
+  if (!wrapper) return;
+  const rows = [...wrapper.querySelectorAll("[data-count-sentence-row]")];
+  const offenses = offenseList(card);
+  const multipleCounts = offenses.length > 1;
+  const applyAll = wrapper.querySelector("[data-apply-sentence-all]");
+  const toggle = wrapper.querySelector("[data-same-sentence-toggle]");
+  const active = !wrapper.classList.contains("hidden");
+  const shared = multipleCounts && applyAll.checked;
+
+  toggle.classList.toggle("hidden", !multipleCounts);
+  applyAll.disabled = !active || !multipleCounts;
+  rows.forEach((row, index) => {
+    const hidden = shared && index > 0;
+    row.classList.toggle("hidden", hidden);
+    row.querySelector("[data-count-sentence-title]").textContent = shared && index === 0
+      ? "All counts"
+      : `Count ${index + 1}${offenses[index] ? ` — ${offenses[index]}` : ""}`;
+    row.querySelectorAll("input").forEach((input) => {
+      input.disabled = !active || hidden;
+    });
+  });
+}
+
+function collectCountSentences(card) {
+  const offenses = offenseList(card);
+  const rows = [...card.querySelectorAll("[data-count-sentence-row]")];
+  const applyAll = offenses.length > 1 && card.querySelector("[data-apply-sentence-all]").checked;
+  return (applyAll ? rows.slice(0, 1) : rows.slice(0, Math.max(offenses.length, 1)))
+    .map((row, index) => ({
+      ...countSentenceData(row),
+      applies_to_all: applyAll,
+      count_number: applyAll ? null : index + 1,
+      offense: applyAll ? "" : (offenses[index] || `Count ${index + 1}`),
+    }));
+}
+
 function createMatter(prefill = {}) {
   if (mattersList.children.length >= 12) return;
   const card = matterTemplate.content.firstElementChild.cloneNode(true);
@@ -223,6 +404,7 @@ function createMatter(prefill = {}) {
   initializeDatedFacts(card, normalizedPrefill.additional_dated_facts);
 
   Object.entries(normalizedPrefill).forEach(([field, value]) => setControlValue(card, field, value));
+  initializeCountSentences(card, normalizedPrefill);
   updateMatterType(card);
 
   if (prefill.source_type) {
@@ -243,7 +425,10 @@ function createMatter(prefill = {}) {
   kindSelect.addEventListener("change", () => updateMatterType(card));
   card.querySelector('[data-field="resolved"]').addEventListener("change", () => updateResolutionFields(card));
   card.querySelector('[data-field="government_pardon"]').addEventListener("change", () => updateResolutionFields(card));
-  card.querySelector('[data-field="case_result"]').addEventListener("change", () => updateResolutionFields(card));
+  card.querySelector('[data-field="case_result"]').addEventListener("change", () => {
+    syncCountSentenceRows(card);
+    updateResolutionFields(card);
+  });
   card.querySelector('[data-field="eligibility_basis"]').addEventListener("change", () => updateOtherBasis(card));
   card.querySelector(".remove-matter-btn").addEventListener("click", () => {
     card.remove();
@@ -448,10 +633,7 @@ function collectPayload() {
             item.dismissal_date = fieldValue(card, "dismissal_date");
             item.dismissal_reason = fieldValue(card, "dismissal_reason");
           } else if (caseResult === "conviction") {
-            item.conviction_date = fieldValue(card, "conviction_date");
-            item.conviction_method = fieldValue(card, "conviction_method");
-            item.sentence_description = fieldValue(card, "sentence_description");
-            item.sentence_completion_date = fieldValue(card, "sentence_completion_date");
+            item.count_sentences = collectCountSentences(card);
           }
         } else {
           item.disposition_type = "other";

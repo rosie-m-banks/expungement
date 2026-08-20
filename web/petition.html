@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Petition Generator - Expungement Screening</title>
     <link rel="stylesheet" href="css/common.css" />
-    <link rel="stylesheet" href="css/petition.css" />
+    <link rel="stylesheet" href="css/petition.css?v=20260819-count-sentences" />
   </head>
   <body>
     <main class="container petition-container">
@@ -273,22 +273,18 @@
               <p class="field-hint">The petition will state: “On or about [date], the case was dismissed [reason].”</p>
             </div>
 
-            <div class="field-group hidden" data-resolution-section="conviction">
-              <label>Date convicted <span aria-hidden="true">*</span></label>
-              <input data-field="conviction_date" type="date" disabled required />
-            </div>
-            <div class="field-group hidden" data-resolution-section="conviction">
-              <label>How did the conviction occur? <span aria-hidden="true">*</span></label>
-              <input data-field="conviction_method" disabled required placeholder="pled" />
-            </div>
-            <div class="field-group full-width hidden" data-resolution-section="conviction">
-              <label>Sentence received <span aria-hidden="true">*</span></label>
-              <input data-field="sentence_description" disabled required placeholder="a one year suspended sentence" />
-            </div>
-            <div class="field-group hidden" data-resolution-section="conviction">
-              <label>Date the sentence was completed <span aria-hidden="true">*</span></label>
-              <input data-field="sentence_completion_date" type="date" disabled required />
-              <p class="field-hint">The conviction and sentence-completion facts will be rendered as two separately numbered allegations.</p>
+            <div class="field-group full-width hidden count-sentences-field" data-resolution-section="conviction">
+              <div class="count-sentences-heading">
+                <div>
+                  <div class="sentence-section-title">Sentence for each count</div>
+                  <p class="field-hint">Each count produces its own conviction and sentence-completion allegations.</p>
+                </div>
+                <label class="same-sentence-toggle hidden" data-same-sentence-toggle>
+                  <input type="checkbox" data-apply-sentence-all disabled />
+                  <span>All counts received the same sentence</span>
+                </label>
+              </div>
+              <div class="count-sentences-list" data-count-sentences-list></div>
             </div>
             <div class="field-group full-width">
               <label>Additional eligibility facts</label>
@@ -353,7 +349,7 @@
 
     <script src="js/engine.js"></script>
     <script src="js/common.js"></script>
-    <script src="js/petition_prefill.js"></script>
-    <script src="js/petition.js"></script>
+    <script src="js/petition_prefill.js?v=20260819-count-sentences"></script>
+    <script src="js/petition.js?v=20260819-count-sentences"></script>
   </body>
 </html>

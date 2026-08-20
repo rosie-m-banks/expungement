@@ -152,6 +152,126 @@ class PetitionGeneratorTests(unittest.TestCase):
             text,
         )
 
+    def test_separate_count_sentences_generate_separate_allegations(self):
+        payload = complete_payload()
+        matter = payload["cases"][0]
+        matter.pop("disposition_date")
+        matter.pop("disposition")
+        matter.update({
+            "disposition_type": "conviction",
+            "count_sentences": [
+                {
+                    "count_number": 1,
+                    "offense": "ignored client value",
+                    "applies_to_all": False,
+                    "conviction_date": "2003-01-02",
+                    "conviction_method": "pled guilty",
+                    "sentence_description": "a one year suspended sentence",
+                    "sentence_completion_date": "2004-01-02",
+                },
+                {
+                    "count_number": 2,
+                    "offense": "ignored client value",
+                    "applies_to_all": False,
+                    "conviction_date": "2003-01-02",
+                    "conviction_method": "pled no contest",
+                    "sentence_description": "a $250 fine",
+                    "sentence_completion_date": "2003-02-03",
+                },
+            ],
+        })
+        payload["cases"] = [matter]
+
+        pdf_bytes, normalized = generate_petition_pdf(payload)
+        text = " ".join(
+            re.sub(r"\s+", " ", page.extract_text() or "").strip()
+            for page in PdfReader(io.BytesIO(pdf_bytes)).pages
+        )
+
+        sentences = normalized["cases"][0]["count_sentences"]
+        self.assertEqual([item["count_number"] for item in sentences], [1, 2])
+        self.assertEqual(
+            [item["offense"] for item in sentences],
+            ["Possession of a controlled substance", "Obstructing an officer"],
+        )
+        self.assertIn(
+            "On or about 01/02/2003, Petitioner pled guilty as to Count 1, "
+            "Possession of a controlled substance, and received a one year suspended sentence.",
+            text,
+        )
+        self.assertIn(
+            "On or about 01/02/2004, Petitioner completed the sentence for Count 1, "
+            "Possession of a controlled substance.",
+            text,
+        )
+        self.assertIn(
+            "On or about 01/02/2003, Petitioner pled no contest as to Count 2, "
+            "Obstructing an officer, and received a $250 fine.",
+            text,
+        )
+        self.assertIn(
+            "On or about 02/03/2003, Petitioner completed the sentence for Count 2, "
+            "Obstructing an officer.",
+            text,
+        )
+
+    def test_one_shared_sentence_can_apply_to_all_counts(self):
+        payload = complete_payload()
+        matter = payload["cases"][0]
+        matter.pop("disposition_date")
+        matter.pop("disposition")
+        matter.update({
+            "disposition_type": "conviction",
+            "count_sentences": [{
+                "applies_to_all": True,
+                "conviction_date": "2003-01-02",
+                "conviction_method": "pled",
+                "sentence_description": "a one year suspended sentence",
+                "sentence_completion_date": "2004-01-02",
+            }],
+        })
+        payload["cases"] = [matter]
+
+        pdf_bytes, normalized = generate_petition_pdf(payload)
+        text = " ".join(
+            re.sub(r"\s+", " ", page.extract_text() or "").strip()
+            for page in PdfReader(io.BytesIO(pdf_bytes)).pages
+        )
+
+        self.assertTrue(normalized["cases"][0]["count_sentences"][0]["applies_to_all"])
+        self.assertIn(
+            "On or about 01/02/2003, Petitioner pled as to all counts and received "
+            "a one year suspended sentence.",
+            text,
+        )
+        self.assertIn(
+            "On or about 01/02/2004, Petitioner completed the sentence for all counts.",
+            text,
+        )
+
+    def test_count_sentences_must_cover_each_count_once(self):
+        payload = complete_payload()
+        matter = payload["cases"][0]
+        matter.pop("disposition_date")
+        matter.pop("disposition")
+        repeated = {
+            "count_number": 1,
+            "applies_to_all": False,
+            "conviction_date": "2003-01-02",
+            "conviction_method": "pled",
+            "sentence_description": "a one year suspended sentence",
+            "sentence_completion_date": "2004-01-02",
+        }
+        matter.update({
+            "disposition_type": "conviction",
+            "count_sentences": [repeated, repeated],
+        })
+        payload["cases"] = [matter]
+
+        with self.assertRaises(PetitionValidationError) as context:
+            generate_petition_pdf(payload)
+        self.assertIn("must include each count exactly once", str(context.exception))
+
     def test_felonies_render_before_misdemeanors_and_arrests(self):
         payload = complete_payload()
         regular = payload["cases"][0]

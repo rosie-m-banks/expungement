@@ -249,6 +249,7 @@
 
     const resolved = Boolean(caseData.resolved);
     const caseResult = outcome === 1 ? "conviction" : [2, 3, 4].includes(outcome) ? "dismissal" : "";
+    const sentenceCompletionDate = caseResult === "conviction" ? isoDate(caseData.sentencing_date) : "";
     Object.assign(item, {
       criminal_case_number: caseName,
       court_name: court,
@@ -261,7 +262,18 @@
       conviction_date: "",
       conviction_method: "",
       sentence_description: "",
-      sentence_completion_date: caseResult === "conviction" ? isoDate(caseData.sentencing_date) : "",
+      sentence_completion_date: sentenceCompletionDate,
+      count_sentences: caseResult === "conviction"
+        ? offenses.map((offense, index) => ({
+            count_number: index + 1,
+            offense,
+            applies_to_all: offenses.length === 1,
+            conviction_date: "",
+            conviction_method: "",
+            sentence_description: "",
+            sentence_completion_date: sentenceCompletionDate,
+          }))
+        : [],
       disposition_date: [3, 4].includes(outcome) ? isoDate(caseData.sentencing_date) : "",
       disposition: OUTCOME_TEXT[outcome] || "",
       additional_facts: additionalFacts.join("\n"),

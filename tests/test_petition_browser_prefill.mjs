@@ -114,6 +114,28 @@ test('browser state imports every eligible matter with felonies first', () => {
   assert.equal(felony.arrest_date, '2010-01-02');
   assert.equal(felony.offenses, 'Larceny\nObstruction');
   assert.equal(felony.sentence_completion_date, '2015-02-04');
+  assert.deepEqual(
+    Array.from(felony.count_sentences, (sentence) => ({
+      count_number: sentence.count_number,
+      offense: sentence.offense,
+      applies_to_all: sentence.applies_to_all,
+      sentence_completion_date: sentence.sentence_completion_date,
+    })),
+    [
+      {
+        count_number: 1,
+        offense: 'Larceny',
+        applies_to_all: false,
+        sentence_completion_date: '2015-02-04',
+      },
+      {
+        count_number: 2,
+        offense: 'Obstruction',
+        applies_to_all: false,
+        sentence_completion_date: '2015-02-04',
+      },
+    ]
+  );
   assert.equal(felony.category_number, '12');
   assert.match(felony.statutory_language, /nonviolent felony offense/);
   assert.equal(felony.additional_dated_facts[0].date, '2010-01-03');
